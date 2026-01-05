@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard - Event Mate AI</title>
+  <link rel="stylesheet" href="dashboard.css" />
+  <style>
+    .dashboard-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .dashboard-card {
+      background: #e9f7ff;
+      border-radius: 20px;
+      padding: 32px 40px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+    }
+
+    .dash-title-main {
+      margin: 0 0 10px;
+      font-size: 26px;
+      color: #04345c;
+    }
+
+    .dash-subtitle {
+      margin: 0 0 20px;
+      font-size: 14px;
+      color: #5b7285;
+    }
+  </style>
+</head>
+<body>
+  <!-- floating emojis layer -->
+  <div class="floating-emoji-layer" id="floatingEmojiLayer"></div>
+
+  <div class="app-shell">
+    <div class="dashboard-wrapper">
+      <div class="dashboard-card">
+        <h1 class="dash-title-main">Admin Dashboard</h1>
+        <p class="dash-subtitle">
+          For admins to create events, manage tickets and see all bookings.
+        </p>
+        <button class="dash-btn-primary" onclick="location.href='admin-home.html'">
+          Go to Admin Panel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- floating emojis script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const emojiLayer = document.getElementById('floatingEmojiLayer');
+      if (!emojiLayer) return;
+
+      const EMOJIS = ['🎉','🎊','🎈','🥳','🎂','🎟️','🎫','✨','🍾','🎵','🎤','🎧','📅'];
+
+      function createEmojiBubble() {
+        const span = document.createElement('span');
+        span.className = 'emoji-bubble';
+        span.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+
+        const startLeft = Math.random() * 100;
+        const startTop  = Math.random() * 100;
+        const dx = (Math.random() * 40 - 20);
+        const dy = (Math.random() * 40 - 20);
+        const duration = 6 + Math.random() * 6;
+
+        span.style.left = startLeft + 'vw';
+        span.style.top  = startTop + 'vh';
+        span.style.setProperty('--dx', dx + 'vw');
+        span.style.setProperty('--dy', dy + 'vh');
+        span.style.animationDuration = duration + 's';
+
+        emojiLayer.appendChild(span);
+        setTimeout(() => span.remove(), duration * 1000);
+      }
+
+      setInterval(createEmojiBubble, 800);
+    });
+  </script>
+</body>
+</html>
