@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>User Dashboard - Event Mate AI</title>
@@ -91,7 +92,7 @@
     .placeholder-box {
       background: #ffffff;
       border-radius: 16px;
-      box-shadow: 0 8px 22px rgba(4,52,92,0.08);
+      box-shadow: 0 8px 22px rgba(4, 52, 92, 0.08);
       padding: 16px 20px;
     }
 
@@ -119,6 +120,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="app-shell">
     <header class="app-header">
@@ -126,10 +128,17 @@
         <span class="brand-logo-circle">E</span>
         <span class="brand-text">EVENTMATE <span class="brand-ai">AI</span></span>
       </div>
-      <button class="logout-btn" onclick="handleLogout()">
-        <div class="logout-icon-circle">⏏</div>
-        <span>Logout</span>
-      </button>
+      <div class="profile-dropdown">
+        <button class="logout-btn" title="Profile" onclick="window.location.href='user-profile.html'">
+          <div class="logout-icon-circle">👤</div>
+          <span>Profile</span>
+        </button>
+        <div class="dropdown-content">
+          <a href="user-dashboard.html">Dashboard</a>
+          <a href="user-profile.html">Edit Profile</a>
+          <a href="javascript:void(0)" onclick="handleLogout()" class="logout-link">Logout</a>
+        </div>
+      </div>
     </header>
 
     <main class="app-main">
@@ -222,7 +231,7 @@
           </div>`;
       } else if (page === 'events') {
         // Load user-events.html into center
-        loadHtmlIntoMain('user-events.html','Events');
+        loadHtmlIntoMain('user-events.html', 'Events');
       } else if (page === 'booking') {
         // Load booking.html into center
         loadHtmlIntoMain('booking.html');
@@ -233,4 +242,5 @@
     }
   </script>
 </body>
+
 </html>

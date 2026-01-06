@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Admin Home - Event Mate AI</title>
@@ -91,7 +92,7 @@
     .content-card {
       background: #ffffff;
       border-radius: 16px;
-      box-shadow: 0 8px 22px rgba(4,52,92,0.08);
+      box-shadow: 0 8px 22px rgba(4, 52, 92, 0.08);
       padding: 20px 24px;
     }
 
@@ -128,17 +129,20 @@
       height: 420px;
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
+
     .hero-slide {
       position: absolute;
       inset: 0;
       opacity: 0;
       transition: opacity 0.8s ease;
     }
+
     .hero-slide.active {
       opacity: 1;
     }
+
     .hero-slide img {
       width: 100%;
       height: 100%;
@@ -147,6 +151,7 @@
     }
   </style>
 </head>
+
 <body>
   <!-- floating emojis layer -->
   <div class="floating-emoji-layer" id="floatingEmojiLayer"></div>
@@ -157,10 +162,17 @@
         <span class="brand-logo-circle">E</span>
         <span class="brand-text">EVENTMATE <span class="brand-ai">AI</span></span>
       </div>
-      <button class="logout-btn" title="Logout" onclick="handleLogout()">
-        <div class="logout-icon-circle">⏏</div>
-        <span>Logout</span>
-      </button>
+      <div class="profile-dropdown">
+        <button class="logout-btn" title="Profile" onclick="window.location.href='admin-profile.html'">
+          <div class="logout-icon-circle">👤</div>
+          <span>Profile</span>
+        </button>
+        <div class="dropdown-content">
+          <a href="admin-home.html">Dashboard</a>
+          <a href="admin-profile.html">Edit Profile</a>
+          <a href="javascript:void(0)" onclick="handleLogout()" class="logout-link">Logout</a>
+        </div>
+      </div>
     </header>
 
     <main class="app-main">
@@ -232,18 +244,18 @@
     document.addEventListener('DOMContentLoaded', () => {
       const emojiLayer = document.getElementById('floatingEmojiLayer');
       if (emojiLayer) {
-        const EMOJIS = ['🎉','🎊','🎈','🥳','🎂','🎟️','🎫','✨','🍾','🎵','🎤','🎧','📅'];
+        const EMOJIS = ['🎉', '🎊', '🎈', '🥳', '🎂', '🎟️', '🎫', '✨', '🍾', '🎵', '🎤', '🎧', '📅'];
         function createEmojiBubble() {
           const span = document.createElement('span');
           span.className = 'emoji-bubble';
           span.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
           const startLeft = Math.random() * 100;
-          const startTop  = Math.random() * 100;
+          const startTop = Math.random() * 100;
           const dx = (Math.random() * 40 - 20);
           const dy = (Math.random() * 40 - 20);
           const duration = 6 + Math.random() * 6;
           span.style.left = startLeft + 'vw';
-          span.style.top  = startTop + 'vh';
+          span.style.top = startTop + 'vh';
           span.style.setProperty('--dx', dx + 'vw');
           span.style.setProperty('--dy', dy + 'vh');
           span.style.animationDuration = duration + 's';
@@ -297,7 +309,7 @@
     function openPage(page) {
       setActiveButton(page);
 
-    if (page === 'home') {
+      if (page === 'home') {
         const main = document.getElementById('mainContent');
         main.innerHTML = `
           <div class="content-card">
@@ -332,17 +344,18 @@
           });
       } else if (page === 'edit') {
         loadHtmlIntoMain('admin-edit-events.html', 'Edit Events')
-            .then(() => {
-      // now the HTML has been injected, so call the function defined in that file
-              if (typeof loadEventsForEdit === 'function') {
-                loadEventsForEdit();
-              }
-            });
+          .then(() => {
+            // now the HTML has been injected, so call the function defined in that file
+            if (typeof loadEventsForEdit === 'function') {
+              loadEventsForEdit();
+            }
+          });
 
 
-      }else if (page === 'bookings') {
+      } else if (page === 'bookings') {
         loadHtmlIntoMain('admin-bookings.html', 'Booking Overview');
       }
+    }
 
     // Attach JS to the injected create-event form
     function wireCreateEventForm() {
@@ -469,4 +482,5 @@
 
   </script>
 </body>
+
 </html>

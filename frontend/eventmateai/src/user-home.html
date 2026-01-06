@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>User Dashboard - Event Mate AI</title>
@@ -9,7 +10,7 @@
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: linear-gradient(135deg, #9be7ff 0%, #00c6ff 35%, #00e1ff 70%, #c3f5ff 100%);
-      background-attachment:fixed;
+      background-attachment: fixed;
     }
 
     .app-shell {
@@ -92,7 +93,7 @@
     .content-card {
       background: #ffffff;
       border-radius: 16px;
-      box-shadow: 0 8px 22px rgba(4,52,92,0.08);
+      box-shadow: 0 8px 22px rgba(4, 52, 92, 0.08);
       padding: 20px 24px;
     }
 
@@ -116,18 +117,21 @@
       height: 420px;
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
       margin: 10px auto 24px;
     }
+
     .hero-slide {
       position: absolute;
       inset: 0;
       opacity: 0;
       transition: opacity 0.8s ease;
     }
+
     .hero-slide.active {
       opacity: 1;
     }
+
     .hero-slide img {
       width: 100%;
       height: 100%;
@@ -149,6 +153,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="app-shell">
     <header class="app-header">
@@ -156,10 +161,17 @@
         <span class="brand-logo-circle">E</span>
         <span class="brand-text">EVENTMATE <span class="brand-ai">AI</span></span>
       </div>
-      <button class="logout-btn" onclick="handleLogout()">
-        <div class="logout-icon-circle">⏏</div>
-        <span>Logout</span>
-      </button>
+      <div class="profile-dropdown">
+        <button class="logout-btn" title="Profile" onclick="window.location.href='user-profile.html'">
+          <div class="logout-icon-circle">👤</div>
+          <span>Profile</span>
+        </button>
+        <div class="dropdown-content">
+          <a href="user-dashboard.html">Dashboard</a>
+          <a href="user-profile.html">Edit Profile</a>
+          <a href="javascript:void(0)" onclick="handleLogout()" class="logout-link">Logout</a>
+        </div>
+      </div>
     </header>
 
     <main class="app-main">
@@ -327,4 +339,5 @@
     document.addEventListener('DOMContentLoaded', initHeroSlider);
   </script>
 </body>
+
 </html>
