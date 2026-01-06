@@ -345,12 +345,8 @@
       } else if (page === 'edit') {
         loadHtmlIntoMain('admin-edit-events.html', 'Edit Events')
           .then(() => {
-            // now the HTML has been injected, so call the function defined in that file
-            if (typeof loadEventsForEdit === 'function') {
-              loadEventsForEdit();
-            }
+            wireEditEventPage();
           });
-
 
       } else if (page === 'bookings') {
         loadHtmlIntoMain('admin-bookings.html', 'Booking Overview');
@@ -461,6 +457,194 @@
           alert('Error connecting to server');
         }
       });
+    }
+
+    // Logic for Edit Events page
+    let allEvents = [];
+
+    async function wireEditEventPage() {
+      await loadEventsForEdit();
+
+      // "Cancel" button in the edit panel
+      const btnCancelEdit = document.getElementById('btnCancelEdit');
+      if (btnCancelEdit) {
+        btnCancelEdit.addEventListener('click', cancelEdit);
+      }
+
+      // "Save Changes" form submit
+      const editForm = document.getElementById('editEventForm');
+      if (editForm) {
+        editForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const id = document.getElementById('editId').value;
+          if (!id) {
+            alert('No event selected.');
+            return;
+          }
+
+          const date = document.getElementById('editDate').value;
+          const time = document.getElementById('editTime').value;
+          const dateTime = (date && time) ? (date + 'T' + time + ':00') : null;
+
+          const body = {
+            title: document.getElementById('editTitle').value,
+            dateTime: dateTime,
+            venue: document.getElementById('editVenue').value,
+            category: document.getElementById('editCategory').value,
+            status: document.getElementById('editStatus').value,
+            description: document.getElementById('editDescription').value,
+            availableSeats: parseInt(document.getElementById('editSeats').value || '0'),
+            costPerTicket: parseFloat(document.getElementById('editCost').value || '0'),
+            currency: document.getElementById('editCurrency').value
+          };
+
+          try {
+            const res = await fetch(API_BASE + '/api/events/' + id, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body)
+            });
+
+            if (!res.ok) {
+              alert('Failed to update event (HTTP ' + res.status + ')');
+              return;
+            }
+
+            alert('Event updated successfully.');
+            document.getElementById('editPanel').style.display = 'none';
+            await loadEventsForEdit();
+          } catch (err) {
+            console.error('Error updating event:', err);
+            alert('Error connecting to server.');
+          }
+        });
+      }
+    }
+
+    async function loadEventsForEdit() {
+      const tbody = document.querySelector('#eventsTable tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = '<tr><td colspan="7">Loading events...</td></tr>';
+
+      try {
+        const res = await fetch(API_BASE + '/api/events');
+        if (!res.ok) {
+          tbody.innerHTML = '<tr><td colspan="7">Failed to load events.</td></tr>';
+          return;
+        }
+        const events = await res.json();
+        allEvents = events;
+
+        if (!events || events.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7">No events available.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = '';
+        events.forEach(e => {
+          const tr = document.createElement('tr');
+          // Format date slightly better
+          const dt = e.dateTime ? e.dateTime.replace("T", " ") : "Date not set";
+
+          tr.innerHTML = `
+            <td>${e.id}</td>
+            <td>${e.title}</td>
+            <td>${dt}</td>
+            <td>${e.venue || 'Venue TBD'}</td>
+            <td>${e.category || '<span class="badge-pill">N/A</span>'}</td>
+            <td>${e.availableSeats ?? '-'}</td>
+            <td>
+              <div class="event-actions">
+                <button class="btn-edit" data-id="${e.id}">Edit</button>
+                <button class="btn-delete" data-id="${e.id}">Delete</button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        // Wire up per-row buttons
+        document.querySelectorAll('.btn-edit').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = parseInt(btn.getAttribute('data-id'), 10);
+            startEdit(id);
+          });
+        });
+
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = parseInt(btn.getAttribute('data-id'), 10);
+            deleteEvent(id);
+          });
+        });
+
+      } catch (err) {
+        console.error('Error loading events:', err);
+        tbody.innerHTML = '<tr><td colspan="7">Error connecting to server.</td></tr>';
+      }
+    }
+
+    function startEdit(id) {
+      const eventData = allEvents.find(e => e.id === id);
+      if (!eventData) {
+        alert('Event not found in loaded list.');
+        return;
+      }
+
+      document.getElementById('editId').value = eventData.id;
+      document.getElementById('editTitle').value = eventData.title || '';
+
+      if (eventData.dateTime) {
+        const [datePart, timePart] = eventData.dateTime.split('T');
+        document.getElementById('editDate').value = datePart || '';
+        document.getElementById('editTime').value = (timePart || '').slice(0, 5);
+      } else {
+        document.getElementById('editDate').value = '';
+        document.getElementById('editTime').value = '';
+      }
+
+      document.getElementById('editVenue').value = eventData.venue || '';
+      document.getElementById('editCategory').value = eventData.category || '';
+      document.getElementById('editStatus').value = eventData.status || 'ACTIVE';
+      document.getElementById('editDescription').value = eventData.description || '';
+      document.getElementById('editSeats').value = eventData.availableSeats ?? '';
+      document.getElementById('editCost').value = eventData.costPerTicket ?? '';
+      document.getElementById('editCurrency').value = eventData.currency || '';
+
+      document.getElementById('editPanel').style.display = 'block';
+      // scroll to edit panel
+      const panel = document.getElementById('editPanel');
+      panel.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+      const panel = document.getElementById('editPanel');
+      if (panel) panel.style.display = 'none';
+      const form = document.getElementById('editEventForm');
+      if (form) form.reset();
+    }
+
+    async function deleteEvent(id) {
+      const ok = confirm('Are you sure you want to delete event #' + id + '?');
+      if (!ok) return;
+
+      try {
+        const res = await fetch(API_BASE + '/api/events/' + id, {
+          method: 'DELETE'
+        });
+
+        if (!res.ok) {
+          alert('Failed to delete event (HTTP ' + res.status + ')');
+          return;
+        }
+
+        await loadEventsForEdit();
+        cancelEdit();
+      } catch (err) {
+        console.error('Error deleting event:', err);
+        alert('Error while deleting the event.');
+      }
     }
 
     // simple auto slider
