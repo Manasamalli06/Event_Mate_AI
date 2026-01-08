@@ -279,11 +279,10 @@
       }
     }
 
-    function openPage(page) {
+    async function openPage(page) {
       setActiveButton(page);
 
       if (page === 'home') {
-        // Restore slider card
         const main = document.getElementById('mainContent');
         main.innerHTML = `
           <div class="content-card">
@@ -308,13 +307,134 @@
           </div>`;
         initHeroSlider();
       } else if (page === 'events') {
-        loadHtmlIntoMain('user-events.html', 'Events');
+        renderEventsPage();
       } else if (page === 'booking') {
         loadHtmlIntoMain('booking.html', 'Booking');
       } else if (page === 'my-bookings') {
         loadHtmlIntoMain('user-my-bookings.html', 'My Bookings');
       }
     }
+
+    // --- EVENTS LOGIC ---
+    const API_BASE = 'http://localhost:9098';
+
+    async function renderEventsPage() {
+      const main = document.getElementById('mainContent');
+      main.innerHTML = `
+        <div class="content-card">
+          <div class="events-container" style="padding:0;">
+            <h1 class="events-title">Event List</h1>
+            <p class="events-subtitle">
+              Browse all public events created by admins in EventMate AI.
+            </p>
+            <div id="eventsList" class="events-list">
+              <p class="loading-text">Loading events...</p>
+            </div>
+            <div id="eventDetailsArea" class="event-details-card" style="display:none;">
+              <p class="event-details-empty">
+                Select an event above to view its full details here.
+              </p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/events`);
+        if (!res.ok) throw new Error('Failed to load events');
+        const events = await res.json();
+        renderEventsList(events);
+      } catch (err) {
+        console.error(err);
+        const listEl = document.getElementById('eventsList');
+        if (listEl) listEl.innerHTML = '<p class="error-text">Error loading events.</p>';
+      }
+    }
+
+    function renderEventsList(events) {
+      const listEl = document.getElementById('eventsList');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      if (!events || events.length === 0) {
+        listEl.innerHTML = '<p class="event-details-empty">No events available.</p>';
+        return;
+      }
+
+      events.forEach(ev => {
+        const item = document.createElement('div');
+        item.className = 'event-item';
+
+        const date = ev.dateTime ? new Date(ev.dateTime).toLocaleDateString() : 'Date TBD';
+
+        item.innerHTML = `
+          <div class="event-main">
+            <span class="event-name">${ev.title}</span>
+            <span class="event-meta">
+              ${date} • ${ev.venue || 'TBD'}
+            </span>
+          </div>
+          <span class="event-badge">${ev.category || 'Event'}</span>
+        `;
+
+        // click to toggle details
+        item.addEventListener('click', () => toggleEventDetails(ev, item));
+        listEl.appendChild(item);
+      });
+    }
+
+    function toggleEventDetails(ev, item) {
+      // Check if THIS item is currently open
+      // We look at the immediate next sibling and check if it's a details container
+      const nextEl = item.nextElementSibling;
+      const isAlreadyOpen = nextEl && nextEl.classList.contains('event-details-row-container');
+
+      // Close ALL existing details containers to ensure only one is open at a time (accordion style)
+      const allDetails = document.querySelectorAll('.event-details-row-container');
+      allDetails.forEach(d => d.remove());
+
+      // If it was already open, we essentially toggled it off by removing it above.
+      // So we return early.
+      if (isAlreadyOpen) {
+        return;
+      }
+
+      // Otherwise, create and append the new details container
+      const detailsContainer = document.createElement('div');
+      detailsContainer.className = 'event-details-row-container';
+      detailsContainer.style.padding = '10px 16px';
+      detailsContainer.style.background = '#f0f8ff';
+      detailsContainer.style.marginBottom = '10px';
+      detailsContainer.style.borderRadius = '8px';
+      detailsContainer.style.cursor = 'pointer'; // indicate clickable
+      detailsContainer.title = "Click to close details";
+
+      const date = ev.dateTime ? new Date(ev.dateTime).toLocaleDateString() : 'N/A';
+      const time = ev.dateTime ? new Date(ev.dateTime).toLocaleTimeString() : 'N/A';
+
+      detailsContainer.innerHTML = `
+          <h2 class="event-details-title" style="font-size:16px; margin-top:0;">${ev.title}</h2>
+          <div class="event-details-row"><span class="event-details-label">Date:</span> ${date}</div>
+          <div class="event-details-row"><span class="event-details-label">Time:</span> ${time}</div>
+          <div class="event-details-row"><span class="event-details-label">Venue:</span> ${ev.venue || 'N/A'}</div>
+          <div class="event-details-row"><span class="event-details-label">Category:</span> ${ev.category || 'N/A'}</div>
+          <div class="event-details-row"><span class="event-details-label">Available Seats:</span> ${ev.availableSeats ?? 'N/A'}</div>
+          <div class="event-details-row"><span class="event-details-label">Cost:</span> ${ev.currency || ''} ${ev.costPerTicket ?? 'Free'}</div>
+          <div class="event-details-row"><span class="event-details-label">Status:</span> ${ev.status || 'Active'}</div>
+          <div class="event-details-row" style="margin-top:8px;">
+            <span class="event-details-label">Description:</span>
+            <span>${ev.description || 'No description provided.'}</span>
+          </div>
+       `;
+
+      // Add listener to close when clicking on the details container itself
+      detailsContainer.addEventListener('click', () => {
+        detailsContainer.remove();
+      });
+
+      item.parentNode.insertBefore(detailsContainer, item.nextSibling);
+    }
+
 
     // Slider logic
     let heroInterval = null;
