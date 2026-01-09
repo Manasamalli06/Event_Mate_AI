@@ -24,16 +24,42 @@ import com.example.eventmateai.repository.BookingRepository;
 public class BookingController {
 
     private final BookingRepository bookingRepository;
+    private final com.example.eventmateai.repository.EventRepository eventRepository;
+    private final com.example.eventmateai.repository.UserRepository userRepository;
 
-    public BookingController(BookingRepository bookingRepository) {
+    public BookingController(BookingRepository bookingRepository,
+            com.example.eventmateai.repository.EventRepository eventRepository,
+            com.example.eventmateai.repository.UserRepository userRepository) {
         this.bookingRepository = bookingRepository;
+        this.eventRepository = eventRepository;
+        this.userRepository = userRepository;
     }
 
-    // ADMIN: get all bookings
+    // ADMIN: get all bookings with details
     // GET http://localhost:9098/api/bookings
     @GetMapping
-    public List<Booking> getAllBookings() {
-        return bookingRepository.findAll();
+    public List<com.example.eventmateai.dto.BookingResponse> getAllBookings() {
+        List<Booking> bookings = bookingRepository.findAll();
+        return bookings.stream().map(b -> {
+            com.example.eventmateai.dto.BookingResponse resp = new com.example.eventmateai.dto.BookingResponse();
+            resp.setId(b.getId());
+            resp.setUserId(b.getUserId());
+            resp.setEventId(b.getEventId());
+            resp.setTickets(b.getTickets());
+            resp.setPaymentMode(b.getPaymentMode());
+            resp.setStatus(b.getStatus());
+            resp.setCreatedAt(b.getCreatedAt());
+            resp.setEventDateTime(b.getEventDateTime());
+            resp.setSeats(b.getSeats());
+
+            // Enrich with titles/names
+            eventRepository.findById(b.getEventId()).ifPresent(e -> resp.setEventTitle(e.getTitle()));
+            userRepository.findById(b.getUserId()).ifPresent(u -> resp.setUserName(u.getFullName())); // Assuming User
+                                                                                                      // has
+                                                                                                      // getFullName()
+
+            return resp;
+        }).collect(java.util.stream.Collectors.toList());
     }
 
     // USER: create a booking
@@ -47,7 +73,7 @@ public class BookingController {
         b.setPaymentMode(req.getPaymentMode());
         b.setStatus(req.getStatus());
         b.setEventDateTime(req.getEventDateTime());
-        if(req.getSeats() != null && !req.getSeats().isEmpty()){
+        if (req.getSeats() != null && !req.getSeats().isEmpty()) {
             String seatsJoined = String.join(",", req.getSeats());
             b.setSeats(seatsJoined);
         } else {

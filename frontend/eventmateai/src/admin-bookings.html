@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Admin - Booking Overview</title>
@@ -146,80 +147,81 @@
     }
   </style>
 </head>
+
 <body>
   <!-- floating emojis layer -->
   <div class="floating-emoji-layer" id="floatingEmojiLayer"></div>
 
 
 
-    <main class="app-main">
+  <main class="app-main">
 
 
-      <div class="page-wrapper">
-        <h1>Booking Overview</h1>
+    <div class="page-wrapper">
+      <h1>Booking Overview</h1>
 
-        <div class="stats">
-          <div class="stat-card">
-            <div>Total Bookings</div>
-            <strong id="stat-total">0</strong>
-          </div>
-          <div class="stat-card">
-            <div>Confirmed</div>
-            <strong id="stat-confirmed">0</strong>
-          </div>
-          <div class="stat-card">
-            <div>Pending</div>
-            <strong id="stat-pending">0</strong>
-          </div>
-          <div class="stat-card">
-            <div>Cancelled</div>
-            <strong id="stat-cancelled">0</strong>
-          </div>
+      <div class="stats">
+        <div class="stat-card">
+          <div>Total Bookings</div>
+          <strong id="stat-total">0</strong>
         </div>
-
-        <div class="filters">
-          <label>
-            Search (user / event / id):
-            <input type="text" id="searchInput" placeholder="Type to search..." />
-          </label>
-
-          <label>
-            Status:
-            <select id="statusFilter">
-              <option value="">All</option>
-              <option value="CONFIRMED">Confirmed</option>
-              <option value="PENDING">Pending</option>
-              <option value="CANCELLED">Cancelled</option>
-            </select>
-          </label>
-
-          <button onclick="applyFilters()">Apply Filters</button>
-          <button onclick="resetFilters()">Reset</button>
+        <div class="stat-card">
+          <div>Confirmed</div>
+          <strong id="stat-confirmed">0</strong>
         </div>
-
-        <div class="table-wrapper">
-          <table id="bookingsTable">
-            <thead>
-              <tr>
-                <th>Booking ID</th>
-                <th>Event</th>
-                <th>Event Date/Time</th>
-                <th>User</th>
-                <th>Tickets</th>
-                <th>Payment Mode</th>
-                <th>Payment Status</th>
-                <th>Booking Status</th>
-              <th>Booked At</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- rows via JS -->
-            </tbody>
-          </table>
+        <div class="stat-card">
+          <div>Pending</div>
+          <strong id="stat-pending">0</strong>
+        </div>
+        <div class="stat-card">
+          <div>Cancelled</div>
+          <strong id="stat-cancelled">0</strong>
         </div>
       </div>
-    </main>
+
+      <div class="filters">
+        <label>
+          Search (user / event / id):
+          <input type="text" id="searchInput" placeholder="Type to search..." />
+        </label>
+
+        <label>
+          Status:
+          <select id="statusFilter">
+            <option value="">All</option>
+            <option value="CONFIRMED">Confirmed</option>
+            <option value="PENDING">Pending</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </label>
+
+        <button onclick="applyFilters()">Apply Filters</button>
+        <button onclick="resetFilters()">Reset</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table id="bookingsTable">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Event</th>
+              <th>Event Date/Time</th>
+              <th>User</th>
+              <th>Tickets</th>
+              <th>Payment Mode</th>
+              <th>Payment Status</th>
+              <th>Booking Status</th>
+              <th>Booked At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- rows via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
   </div>
 
   <!-- shared emoji background script -->
@@ -228,7 +230,7 @@
       const emojiLayer = document.getElementById('floatingEmojiLayer');
       if (!emojiLayer) return;
 
-      const EMOJIS = ['🎉','🎊','🎈','🥳','🎂','🎟️','🎫','✨','🍾','🎵','🎤','🎧','📅'];
+      const EMOJIS = ['🎉', '🎊', '🎈', '🥳', '🎂', '🎟️', '🎫', '✨', '🍾', '🎵', '🎤', '🎧', '📅'];
 
       function createEmojiBubble() {
         const span = document.createElement('span');
@@ -236,13 +238,13 @@
         span.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
 
         const startLeft = Math.random() * 100;   // 0–100 vw
-        const startTop  = Math.random() * 100;   // 0–100 vh
+        const startTop = Math.random() * 100;   // 0–100 vh
         const dx = (Math.random() * 40 - 20);    // -20 to +20 vw
         const dy = (Math.random() * 40 - 20);    // -20 to +20 vh
         const duration = 6 + Math.random() * 6;  // 6–12 s
 
         span.style.left = startLeft + 'vw';
-        span.style.top  = startTop + 'vh';
+        span.style.top = startTop + 'vh';
         span.style.setProperty('--dx', dx + 'vw');
         span.style.setProperty('--dy', dy + 'vh');
         span.style.animationDuration = duration + 's';
@@ -256,147 +258,8 @@
   </script>
 
   <script>
-    const API_BASE = 'http://localhost:9098';
-    let allBookings = [];
-
-    function handleLogout() {
-      window.location.href = 'login.html';
-    }
-
-    function handleBackAdmin() {
-      if (document.referrer) {
-        window.history.back();
-      } else {
-        window.location.href = 'admin-home.html';
-      }
-    }
-
-    async function loadBookings() {
-      try {
-        const res = await fetch(API_BASE + '/api/bookings');
-        if (!res.ok) {
-          console.error('Failed to load bookings, status =', res.status);
-          return;
-        }
-        const data = await res.json();
-        allBookings = data;
-        renderTable(allBookings);
-        updateStats(allBookings);
-      } catch (err) {
-        console.error('Error loading bookings:', err);
-      }
-    }
-
-    function renderTable(bookings) {
-      const tbody = document.querySelector('#bookingsTable tbody');
-      tbody.innerHTML = '';
-
-      bookings.forEach(b => {
-        const tr = document.createElement('tr');
-
-        const bookingId = b.id;
-        const eventTitle = b.eventTitle || ('Event #' + b.eventId);
-        const eventDateTime = b.eventDateTime || '';
-        const userName = b.userName || ('User #' + b.userId);
-        const tickets = b.tickets;
-        const paymentMode = b.paymentMode || '';
-        const paymentStatus = b.paymentStatus || '';
-        const status = b.status || '';
-        const createdAt = b.createdAt || '';
-
-        tr.innerHTML = `
-          <td>${bookingId}</td>
-          <td>${eventTitle}</td>
-          <td>${eventDateTime}</td>
-          <td>${userName}</td>
-          <td>${tickets}</td>
-          <td>${paymentMode}</td>
-          <td>${paymentStatus}</td>
-          <td>${status}</td>
-          <td>${createdAt}</td>
-          <td class="actions">
-            <button class="btn-view" onclick="viewDetails(${bookingId})">View</button>
-            <button class="btn-confirm" onclick="changeStatus(${bookingId}, 'CONFIRMED')">Confirm</button>
-            <button class="btn-cancel" onclick="changeStatus(${bookingId}, 'CANCELLED')">Cancel</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function updateStats(bookings) {
-      document.getElementById('stat-total').textContent = bookings.length;
-      const confirmed = bookings.filter(b => b.status === 'CONFIRMED').length;
-      const pending = bookings.filter(b => b.status === 'PENDING').length;
-      const cancelled = bookings.filter(b => b.status === 'CANCELLED').length;
-      document.getElementById('stat-confirmed').textContent = confirmed;
-      document.getElementById('stat-pending').textContent = pending;
-      document.getElementById('stat-cancelled').textContent = cancelled;
-    }
-
-    function applyFilters() {
-      const search = document.getElementById('searchInput').value.toLowerCase();
-      const status = document.getElementById('statusFilter').value;
-
-      const filtered = allBookings.filter(b => {
-        const bookingId = (b.id + '').toLowerCase();
-        const eventTitle = (b.eventTitle || ('Event #' + b.eventId)).toLowerCase();
-        const userName = (b.userName || ('User #' + b.userId)).toLowerCase();
-
-        const matchesSearch =
-          bookingId.includes(search) ||
-          eventTitle.includes(search) ||
-          userName.includes(search);
-
-        const matchesStatus = status ? b.status === status : true;
-
-        return matchesSearch && matchesStatus;
-      });
-
-      renderTable(filtered);
-      updateStats(filtered);
-    }
-
-    function resetFilters() {
-      document.getElementById('searchInput').value = '';
-      document.getElementById('statusFilter').value = '';
-      renderTable(allBookings);
-      updateStats(allBookings);
-    }
-
-    function viewDetails(bookingId) {
-      alert('View details for booking #' + bookingId);
-    }
-
-    async function changeStatus(bookingId, newStatus) {
-      const confirmMsg =
-        'Are you sure you want to mark booking #' +
-        bookingId +
-        ' as ' +
-        newStatus +
-        '?';
-      if (!confirm(confirmMsg)) return;
-
-      try {
-        const res = await fetch(
-          API_BASE + '/api/bookings/' + bookingId + '/status',
-          {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: newStatus })
-          }
-        );
-        if (!res.ok) {
-          alert('Failed to update status (HTTP ' + res.status + ')');
-          return;
-        }
-        await loadBookings();
-      } catch (err) {
-        console.error('Error updating status:', err);
-      }
-    }
-
-    loadBookings();
+    // Logic moved to admin-home.html
   </script>
 </body>
+
 </html>

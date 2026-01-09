@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Login - EventMate AI</title>
@@ -67,6 +68,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="auth-page">
     <div class="auth-card">
@@ -87,6 +89,18 @@
 
         <label for="password">Password</label>
         <input type="password" id="password" required placeholder="••••••••" />
+
+        <label>Login as:</label>
+        <div style="display:flex; gap:15px; margin-bottom:15px;">
+          <div>
+            <input type="radio" id="roleUser" name="role" value="user" checked>
+            <label for="roleUser" style="display:inline; font-weight:normal;">User</label>
+          </div>
+          <div>
+            <input type="radio" id="roleAdmin" name="role" value="admin">
+            <label for="roleAdmin" style="display:inline; font-weight:normal;">Admin</label>
+          </div>
+        </div>
 
         <!-- Forgot Password link -->
         <div class="forgot-row">
@@ -109,6 +123,7 @@
 
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
+      const role = document.querySelector('input[name="role"]:checked').value;
 
       if (!email || !password) {
         alert('Please enter email and password.');
@@ -119,7 +134,7 @@
         const res = await fetch('http://localhost:9098/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ email, password, role })
         });
 
         if (!res.ok) {
@@ -129,10 +144,10 @@
         }
 
         const data = await res.json();
-        const role = (data.role || '').toLowerCase();
+        const roleFromBackend = (data.role || '').toLowerCase();
 
         try {
-          localStorage.setItem('eventmate_role', role);
+          localStorage.setItem('eventmate_role', roleFromBackend);
           if (data.userId) {
             localStorage.setItem('eventmate_userId', data.userId);
           }
@@ -143,7 +158,7 @@
           console.warn('Could not write to localStorage:', e);
         }
 
-        if (role === 'admin') {
+        if (roleFromBackend === 'admin') {
           window.location.href = 'admin-home.html';
         } else {
           window.location.href = 'user-home.html';
@@ -157,4 +172,5 @@
     }
   </script>
 </body>
+
 </html>

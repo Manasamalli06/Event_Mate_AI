@@ -208,6 +208,13 @@
             <span class="event-details-label">Description:</span>
             <span> ${ev.description || 'No description provided.'}</span>
           </div>
+          
+          <div style="margin-top: 16px; text-align: right;">
+            <a href="user-booking.html?id=${ev.id}" class="btn-primary" style="text-decoration:none; display:inline-block; background:#00a8ff; color:#fff; padding:8px 16px; border-radius:999px; font-size:14px; font-weight:600;">
+              Book Now
+            </a>
+          </div>
+
         </div>
       `;
       detailsDiv.style.display = detailsDiv.style.display === 'block' ? 'none' : 'block';

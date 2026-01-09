@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Event Details - Event Mate AI</title>
@@ -10,32 +11,38 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       margin: 0;
     }
+
     .details-wrapper {
       max-width: 800px;
       margin: 40px auto;
       padding: 0 20px;
     }
+
     .event-title {
       font-size: 24px;
       color: #04345c;
       margin-bottom: 8px;
     }
+
     .event-meta {
       font-size: 14px;
       color: #5b7285;
       margin-bottom: 12px;
     }
+
     .event-desc {
       font-size: 14px;
       color: #354a5f;
       margin-bottom: 16px;
     }
+
     .event-image {
       max-width: 100%;
       border-radius: 12px;
       margin-bottom: 16px;
       display: none;
     }
+
     .back-link {
       font-size: 13px;
       color: #00a8ff;
@@ -45,6 +52,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="details-wrapper">
     <a href="user-events.html" class="back-link">&larr; Back to events</a>
@@ -57,6 +65,12 @@
     </a>
 
     <p class="event-desc" id="description"></p>
+
+    <div style="margin-top:20px;">
+      <a id="bookNowBtn" href="#" class="back-link"
+        style="background:#00a8ff; color:#fff; padding:10px 20px; border-radius:999px; text-decoration:none; font-weight:600;">Book
+        Now</a>
+    </div>
   </div>
 
   <script>
@@ -102,6 +116,11 @@
           img.style.cursor = 'pointer';
           link.href = e.imageUrl; // clicking opens full image in new tab
         }
+
+        const bookBtn = document.getElementById('bookNowBtn');
+        if (bookBtn) {
+          bookBtn.href = `user-booking.html?id=${e.id}`;
+        }
       } catch (err) {
         console.error(err);
         document.getElementById('title').textContent = 'Error connecting to server.';
@@ -111,4 +130,5 @@
     loadEventDetails();
   </script>
 </body>
+
 </html>

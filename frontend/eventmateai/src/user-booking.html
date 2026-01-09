@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Booking Tickets - Event Mate AI</title>
@@ -10,34 +11,40 @@
       margin: 0 auto;
       padding: 24px 20px;
     }
+
     .booking-title {
       font-size: 24px;
       color: #04345c;
       margin-bottom: 6px;
     }
+
     .booking-subtitle {
       font-size: 14px;
       color: #5b7285;
       margin-bottom: 18px;
     }
+
     .booking-card {
       background: #e9f7ff;
       border-radius: 16px;
       padding: 16px 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
       margin-bottom: 14px;
     }
+
     .section-title {
       font-size: 16px;
       color: #04345c;
       margin: 0 0 8px;
       font-weight: 600;
     }
+
     .section-text {
       font-size: 13px;
       color: #5b7285;
       margin: 0 0 10px;
     }
+
     label {
       display: block;
       font-size: 13px;
@@ -45,7 +52,10 @@
       color: #04345c;
       margin-bottom: 4px;
     }
-    select, input[type="number"], input[type="text"] {
+
+    select,
+    input[type="number"],
+    input[type="text"] {
       width: 100%;
       padding: 8px 10px;
       border-radius: 8px;
@@ -53,14 +63,17 @@
       font-size: 13px;
       box-sizing: border-box;
     }
+
     .ticket-row {
       display: flex;
       align-items: center;
       gap: 10px;
     }
+
     .ticket-input {
       max-width: 80px;
     }
+
     .ticket-btn {
       width: 32px;
       height: 32px;
@@ -75,12 +88,14 @@
       align-items: center;
       justify-content: center;
     }
+
     .payment-options {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       margin-top: 6px;
     }
+
     .payment-pill {
       padding: 6px 12px;
       border-radius: 999px;
@@ -90,16 +105,19 @@
       background: #ffffff;
       color: #04345c;
     }
+
     .payment-pill.selected {
       background: #00a8ff;
       color: #ffffff;
     }
+
     .actions {
       margin-top: 18px;
       display: flex;
       justify-content: flex-end;
       gap: 10px;
     }
+
     .btn-outline,
     .btn-primary {
       border-radius: 999px;
@@ -109,15 +127,18 @@
       cursor: pointer;
       border: none;
     }
+
     .btn-outline {
       border: 1px solid #00a8ff;
       background: transparent;
       color: #00a8ff;
     }
+
     .btn-primary {
       background: #00a8ff;
       color: #ffffff;
     }
+
     .qr-box {
       margin-top: 8px;
       padding: 10px;
@@ -126,6 +147,7 @@
       text-align: center;
       border: 1px dashed #c5d8e6;
     }
+
     .qr-box img {
       width: 140px;
       height: 140px;
@@ -141,6 +163,7 @@
       margin-bottom: 8px;
       flex-wrap: wrap;
     }
+
     .seat-box {
       display: inline-block;
       width: 14px;
@@ -148,9 +171,18 @@
       border-radius: 3px;
       margin-right: 4px;
     }
-    .seat-available { background: #04345c; }
-    .seat-selected  { background: #00a8ff; }
-    .seat-occupied  { background: #4f8fd1; }
+
+    .seat-available {
+      background: #04345c;
+    }
+
+    .seat-selected {
+      background: #00a8ff;
+    }
+
+    .seat-occupied {
+      background: #4f8fd1;
+    }
 
     .seat-container {
       display: grid;
@@ -162,6 +194,7 @@
       border-radius: 12px;
       border: 1px dashed #c5d8e6;
     }
+
     .seat {
       width: 22px;
       height: 22px;
@@ -174,10 +207,12 @@
       justify-content: center;
       color: #ffffff;
     }
+
     .seat.selected {
       background: #00a8ff;
       color: #ffffff;
     }
+
     .seat.occupied {
       background: #4f8fd1;
       cursor: not-allowed;
@@ -187,223 +222,215 @@
       .ticket-row {
         justify-content: flex-start;
       }
+
       .seat-container {
         grid-template-columns: repeat(9, 1fr);
       }
     }
   </style>
 </head>
+
 <body>
   <!-- floating emojis layer -->
   <div class="floating-emoji-layer" id="floatingEmojiLayer"></div>
 
 
 
-    <main class="app-main">
+  <main class="app-main">
 
 
-      <div class="booking-wrapper">
-        <h1 class="booking-title">Booking Tickets</h1>
-        <p class="booking-subtitle">
-          Select an event, enter ticket count, choose seats, then pick a payment mode to secure your booking.
+    <div class="booking-wrapper">
+      <h1 class="booking-title">Booking Tickets</h1>
+      <p class="booking-subtitle">
+        Select an event, enter ticket count, choose seats, then pick a payment mode to secure your booking.
+      </p>
+
+      <!-- 1. Select Event -->
+      <div class="booking-card">
+        <h2 class="section-title">1. Select Event</h2>
+        <p class="section-text">
+          Choose one of the available events created by admins.
         </p>
+        <label for="eventSelect">Event</label>
+        <select id="eventSelect">
+          <option value="">Loading events...</option>
+        </select>
+      </div>
 
-        <!-- 1. Select Event -->
-        <div class="booking-card">
-          <h2 class="section-title">1. Select Event</h2>
-          <p class="section-text">
-            Choose one of the available events created by admins.
-          </p>
-          <label for="eventSelect">Event</label>
-          <select id="eventSelect">
-            <option value="">Loading events...</option>
-          </select>
-        </div>
-
-        <!-- 2. Number of tickets -->
-        <div class="booking-card">
-          <h2 class="section-title">2. Number of Tickets</h2>
-          <p class="section-text">
-            Set how many tickets you want. You can then select the same number of seats.
-          </p>
-          <div class="ticket-row">
-            <button type="button" id="minusBtn" class="ticket-btn">-</button>
-            <input
-              type="number"
-              id="ticketCount"
-              class="ticket-input"
-              min="1"
-              value="0"
-            />
-            <button type="button" id="plusBtn" class="ticket-btn">+</button>
-          </div>
-        </div>
-
-        <!-- 2.5 Total Price -->
-        <div class="booking-card" id="totalPriceCard" style="display: none;">
-          <h2 class="section-title">2.5 Total Price</h2>
-          <p class="section-text">
-            The total cost for your selected tickets.
-          </p>
-          <div id="totalPrice" style="font-size: 18px; font-weight: bold; color: #04345c;"></div>
-        </div>
-
-        <!-- 3. Seat Selection -->
-        <div class="booking-card">
-          <h2 class="section-title">3. Select Seats</h2>
-          <p class="section-text">
-            You can select any seats, but total selected seats must equal the number of tickets.
-          </p>
-
-          <div class="seat-legend">
-            <span><span class="seat-box seat-available"></span> Available</span>
-            <span><span class="seat-box seat-selected"></span> Selected</span>
-            <span><span class="seat-box seat-occupied"></span> Booked</span>
-          </div>
-
-          <div id="seatContainer" class="seat-container">
-            <!-- seats will be generated by JavaScript -->
-          </div>
-        </div>
-
-        <!-- 4. Payment mode -->
-        <div class="booking-card">
-          <h2 class="section-title">4. Payment Mode</h2>
-          <p class="section-text">
-            Choose how you want to pay for your tickets. This is only a UI simulation, not a real payment.
-          </p>
-
-          <div class="payment-options" id="paymentOptions">
-            <div class="payment-pill" data-method="UPI">UPI</div>
-            <div class="payment-pill" data-method="Paytm">Paytm</div>
-            <div class="payment-pill" data-method="Credit Card">Credit Card</div>
-            <div class="payment-pill" data-method="Debit Card">Debit Card</div>
-            <div class="payment-pill" data-method="Net Banking">Net Banking</div>
-            <div class="payment-pill" data-method="Cash on Venue">Cash on Venue</div>
-          </div>
-
-          <!-- UPI / Paytm extra options -->
-          <div id="upiOptions" style="margin-top:12px; display:none;">
-            <label style="margin-bottom:6px;">UPI Payment Type</label>
-            <div style="font-size:13px; color:#354a5f; margin-bottom:4px;">
-              <label>
-                <input type="radio" name="upiType" value="Scanner" checked />
-                Scanner (QR code)
-              </label>
-              <br />
-              <label>
-                <input type="radio" name="upiType" value="UPI ID" />
-                UPI ID
-              </label>
-            </div>
-
-            <div id="scannerBox" class="qr-box" style="display:block;">
-              <img src="images/image.jpg.png" />
-              <div style="font-size:12px; color:#5b7285;">
-                Scan this demo QR with any UPI app (simulation only).
-              </div>
-            </div>
-
-            <div id="upiIdBox" style="display:none; margin-top:8px;">
-              <label for="upiIdInput">Enter your UPI ID</label>
-              <input
-                type="text"
-                id="upiIdInput"
-                placeholder="example@upi"
-              />
-              <p style="font-size:12px; color:#5b7285; margin-top:4px;">
-                In a real system, a payment gateway would send a collect request to this UPI ID.
-              </p>
-            </div>
-          </div>
-
-          <!-- Credit card details -->
-          <div id="creditCardBox" style="margin-top:12px; display:none;">
-            <label style="margin-bottom:6px;">Credit Card Details</label>
-            <label for="ccNumber">Card Number</label>
-            <input type="text" id="ccNumber" placeholder="XXXX-XXXX-XXXX-XXXX" />
-            <label for="ccName" style="margin-top:6px;">Name on Card</label>
-            <input type="text" id="ccName" placeholder="Full name on card" />
-            <div style="display:flex; gap:10px; margin-top:6px;">
-              <div style="flex:1;">
-                <label for="ccExpiry">Expiry (MM/YY)</label>
-                <input type="text" id="ccExpiry" placeholder="MM/YY" />
-              </div>
-              <div style="flex:1;">
-                <label for="ccCvv">CVV</label>
-                <input type="text" id="ccCvv" placeholder="123" />
-              </div>
-            </div>
-          </div>
-
-          <!-- Debit card details -->
-          <div id="debitCardBox" style="margin-top:12px; display:none;">
-            <label style="margin-bottom:6px;">Debit Card Details</label>
-            <label for="dcNumber">Card Number</label>
-            <input type="text" id="dcNumber" placeholder="XXXX-XXXX-XXXX-XXXX" />
-            <label for="dcName" style="margin-top:6px;">Name on Card</label>
-            <input type="text" id="dcName" placeholder="Full name on card" />
-            <div style="display:flex; gap:10px; margin-top:6px;">
-              <div style="flex:1;">
-                <label for="dcExpiry">Expiry (MM/YY)</label>
-                <input type="text" id="dcExpiry" placeholder="MM/YY" />
-              </div>
-              <div style="flex:1;">
-                <label for="dcCvv">CVV</label>
-                <input type="text" id="dcCvv" placeholder="123" />
-              </div>
-            </div>
-          </div>
-
-          <!-- Net banking details -->
-          <div id="netBankingBox" style="margin-top:12px; display:none;">
-            <label style="margin-bottom:6px;">Net Banking Details</label>
-            <label for="nbBank">Select Bank</label>
-            <select id="nbBank">
-              <option value="">Choose your bank</option>
-              <option value="SBI">State Bank of India</option>
-              <option value="HDFC">HDFC Bank</option>
-              <option value="ICICI">ICICI Bank</option>
-              <option value="AXIS">Axis Bank</option>
-              <option value="KOTAK">Kotak Mahindra Bank</option>
-            </select>
-
-            <label for="nbUserId" style="margin-top:6px;">Net Banking User ID</label>
-            <input type="text" id="nbUserId" placeholder="Enter your net banking ID" />
-
-            <p style="font-size:12px; color:#5b7285; margin-top:4px;">
-              This is a demo screen only. In a real app, you would be redirected to your bank's secure login page.
-            </p>
-          </div>
-
-          <!-- Cash on venue -->
-          <div id="cashTotalBox" style="margin-top:12px; display:none;">
-            <label style="margin-bottom:4px;">Cash on Venue</label>
-            <p style="font-size:13px; color:#5b7285;">
-              You have chosen to pay directly at the event venue. Please carry sufficient cash.
-            </p>
-          </div>
-        </div>
-
-        <!-- 5. Order Summary -->
-        <div class="booking-card" id="orderSummaryCard" style="display:none;">
-          <h2 class="section-title">5. Order Summary</h2>
-          <p class="section-text">
-            Review the pricing details before confirming your booking.
-          </p>
-          <div id="orderSummaryContent" style="font-size:13px; color:#04345c;">
-            <!-- Filled by JavaScript -->
-          </div>
-        </div>
-
-        <div class="actions">
-          <button type="button" class="btn-outline" onclick="handleBackUserBooking()">Cancel</button>
-          <button type="button" class="btn-primary" onclick="simulateBooking()">
-            Confirm Booking
-          </button>
+      <!-- 2. Number of tickets -->
+      <div class="booking-card">
+        <h2 class="section-title">2. Number of Tickets</h2>
+        <p class="section-text">
+          Set how many tickets you want. You can then select the same number of seats.
+        </p>
+        <div class="ticket-row">
+          <button type="button" id="minusBtn" class="ticket-btn">-</button>
+          <input type="number" id="ticketCount" class="ticket-input" min="1" value="0" />
+          <button type="button" id="plusBtn" class="ticket-btn">+</button>
         </div>
       </div>
-    </main>
+
+      <!-- 2.5 Total Price -->
+      <div class="booking-card" id="totalPriceCard" style="display: none;">
+        <h2 class="section-title">2.5 Total Price</h2>
+        <p class="section-text">
+          The total cost for your selected tickets.
+        </p>
+        <div id="totalPrice" style="font-size: 18px; font-weight: bold; color: #04345c;"></div>
+      </div>
+
+      <!-- 3. Seat Selection -->
+      <div class="booking-card">
+        <h2 class="section-title">3. Select Seats</h2>
+        <p class="section-text">
+          You can select any seats, but total selected seats must equal the number of tickets.
+        </p>
+
+        <div class="seat-legend">
+          <span><span class="seat-box seat-available"></span> Available</span>
+          <span><span class="seat-box seat-selected"></span> Selected</span>
+          <span><span class="seat-box seat-occupied"></span> Booked</span>
+        </div>
+
+        <div id="seatContainer" class="seat-container">
+          <!-- seats will be generated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- 4. Payment mode -->
+      <div class="booking-card">
+        <h2 class="section-title">4. Payment Mode</h2>
+        <p class="section-text">
+          Choose how you want to pay for your tickets. This is only a UI simulation, not a real payment.
+        </p>
+
+        <div class="payment-options" id="paymentOptions">
+          <div class="payment-pill" data-method="UPI">UPI</div>
+          <div class="payment-pill" data-method="Paytm">Paytm</div>
+          <div class="payment-pill" data-method="Credit Card">Credit Card</div>
+          <div class="payment-pill" data-method="Debit Card">Debit Card</div>
+          <div class="payment-pill" data-method="Net Banking">Net Banking</div>
+          <div class="payment-pill" data-method="Cash on Venue">Cash on Venue</div>
+        </div>
+
+        <!-- UPI / Paytm extra options -->
+        <div id="upiOptions" style="margin-top:12px; display:none;">
+          <label style="margin-bottom:6px;">UPI Payment Type</label>
+          <div style="font-size:13px; color:#354a5f; margin-bottom:4px;">
+            <label>
+              <input type="radio" name="upiType" value="Scanner" checked />
+              Scanner (QR code)
+            </label>
+            <br />
+            <label>
+              <input type="radio" name="upiType" value="UPI ID" />
+              UPI ID
+            </label>
+          </div>
+
+          <div id="scannerBox" class="qr-box" style="display:block;">
+            <img src="images/image.jpg.png" />
+            <div style="font-size:12px; color:#5b7285;">
+              Scan this demo QR with any UPI app (simulation only).
+            </div>
+          </div>
+
+          <div id="upiIdBox" style="display:none; margin-top:8px;">
+            <label for="upiIdInput">Enter your UPI ID</label>
+            <input type="text" id="upiIdInput" placeholder="example@upi" />
+            <p style="font-size:12px; color:#5b7285; margin-top:4px;">
+              In a real system, a payment gateway would send a collect request to this UPI ID.
+            </p>
+          </div>
+        </div>
+
+        <!-- Credit card details -->
+        <div id="creditCardBox" style="margin-top:12px; display:none;">
+          <label style="margin-bottom:6px;">Credit Card Details</label>
+          <label for="ccNumber">Card Number</label>
+          <input type="text" id="ccNumber" placeholder="XXXX-XXXX-XXXX-XXXX" />
+          <label for="ccName" style="margin-top:6px;">Name on Card</label>
+          <input type="text" id="ccName" placeholder="Full name on card" />
+          <div style="display:flex; gap:10px; margin-top:6px;">
+            <div style="flex:1;">
+              <label for="ccExpiry">Expiry (MM/YY)</label>
+              <input type="text" id="ccExpiry" placeholder="MM/YY" />
+            </div>
+            <div style="flex:1;">
+              <label for="ccCvv">CVV</label>
+              <input type="text" id="ccCvv" placeholder="123" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Debit card details -->
+        <div id="debitCardBox" style="margin-top:12px; display:none;">
+          <label style="margin-bottom:6px;">Debit Card Details</label>
+          <label for="dcNumber">Card Number</label>
+          <input type="text" id="dcNumber" placeholder="XXXX-XXXX-XXXX-XXXX" />
+          <label for="dcName" style="margin-top:6px;">Name on Card</label>
+          <input type="text" id="dcName" placeholder="Full name on card" />
+          <div style="display:flex; gap:10px; margin-top:6px;">
+            <div style="flex:1;">
+              <label for="dcExpiry">Expiry (MM/YY)</label>
+              <input type="text" id="dcExpiry" placeholder="MM/YY" />
+            </div>
+            <div style="flex:1;">
+              <label for="dcCvv">CVV</label>
+              <input type="text" id="dcCvv" placeholder="123" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Net banking details -->
+        <div id="netBankingBox" style="margin-top:12px; display:none;">
+          <label style="margin-bottom:6px;">Net Banking Details</label>
+          <label for="nbBank">Select Bank</label>
+          <select id="nbBank">
+            <option value="">Choose your bank</option>
+            <option value="SBI">State Bank of India</option>
+            <option value="HDFC">HDFC Bank</option>
+            <option value="ICICI">ICICI Bank</option>
+            <option value="AXIS">Axis Bank</option>
+            <option value="KOTAK">Kotak Mahindra Bank</option>
+          </select>
+
+          <label for="nbUserId" style="margin-top:6px;">Net Banking User ID</label>
+          <input type="text" id="nbUserId" placeholder="Enter your net banking ID" />
+
+          <p style="font-size:12px; color:#5b7285; margin-top:4px;">
+            This is a demo screen only. In a real app, you would be redirected to your bank's secure login page.
+          </p>
+        </div>
+
+        <!-- Cash on venue -->
+        <div id="cashTotalBox" style="margin-top:12px; display:none;">
+          <label style="margin-bottom:4px;">Cash on Venue</label>
+          <p style="font-size:13px; color:#5b7285;">
+            You have chosen to pay directly at the event venue. Please carry sufficient cash.
+          </p>
+        </div>
+      </div>
+
+      <!-- 5. Order Summary -->
+      <div class="booking-card" id="orderSummaryCard" style="display:none;">
+        <h2 class="section-title">5. Order Summary</h2>
+        <p class="section-text">
+          Review the pricing details before confirming your booking.
+        </p>
+        <div id="orderSummaryContent" style="font-size:13px; color:#04345c;">
+          <!-- Filled by JavaScript -->
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn-outline" onclick="handleBackUserBooking()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="simulateBooking()">
+          Confirm Booking
+        </button>
+      </div>
+    </div>
+  </main>
   </div>
 
   <!-- floating emojis script -->
@@ -412,7 +439,7 @@
       const emojiLayer = document.getElementById('floatingEmojiLayer');
       if (!emojiLayer) return;
 
-      const EMOJIS = ['🎉','🎊','🎈','🥳','🎂','🎟️','🎫','✨','🍾','🎵','🎤','🎧','📅'];
+      const EMOJIS = ['🎉', '🎊', '🎈', '🥳', '🎂', '🎟️', '🎫', '✨', '🍾', '🎵', '🎤', '🎧', '📅'];
 
       function createEmojiBubble() {
         const span = document.createElement('span');
@@ -420,13 +447,13 @@
         span.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
 
         const startLeft = Math.random() * 100;
-        const startTop  = Math.random() * 100;
+        const startTop = Math.random() * 100;
         const dx = (Math.random() * 40 - 20);
         const dy = (Math.random() * 40 - 20);
         const duration = 6 + Math.random() * 6;
 
         span.style.left = startLeft + 'vw';
-        span.style.top  = startTop + 'vh';
+        span.style.top = startTop + 'vh';
         span.style.setProperty('--dx', dx + 'vw');
         span.style.setProperty('--dy', dy + 'vh');
         span.style.animationDuration = duration + 's';
@@ -488,6 +515,19 @@
           opt.textContent = e.title;
           select.appendChild(opt);
         });
+
+        // Pre-select if URL has id
+        const params = new URLSearchParams(window.location.search);
+        const preId = params.get('id');
+        if (preId) {
+          // check if exists in options
+          const exists = Array.from(select.options).some(o => o.value === preId);
+          if (exists) {
+            select.value = preId;
+            // trigger change to load seats/price
+            select.dispatchEvent(new Event('change'));
+          }
+        }
       } catch (err) {
         console.error('Error loading events:', err);
         select.innerHTML = '<option value="">Error loading events</option>';
@@ -768,7 +808,7 @@
         return;
       }
 
-      const userIdFromFrontend = 1;
+      const userIdFromFrontend = localStorage.getItem('eventmate_userId') || 1;
       let paymentMode = selectedPayment;
 
       if (selectedPayment === 'UPI' || selectedPayment === 'Paytm') {
@@ -845,4 +885,5 @@
     loadEventOptions();
   </script>
 </body>
+
 </html>

@@ -150,6 +150,16 @@
       background: #e6dbe7;
     }
   </style>
+
+  <script>
+    // Protect Admin Route
+    (function () {
+      const role = localStorage.getItem('eventmate_role');
+      if (!role || role.toLowerCase() !== 'admin') {
+        window.location.href = 'login.html';
+      }
+    })();
+  </script>
 </head>
 
 <body>
@@ -198,6 +208,11 @@
         <button class="nav-btn" id="nav-bookings" onclick="openPage('bookings')">
           <span class="icon">📊</span>
           <span>Booking Overview</span>
+        </button>
+
+        <button class="nav-btn" id="nav-verify" onclick="openPage('verify')">
+          <span class="icon">✅</span>
+          <span>Verify Ticket</span>
         </button>
       </aside>
 
@@ -274,6 +289,7 @@
       if (page === 'create') document.getElementById('nav-create').classList.add('active');
       if (page === 'edit') document.getElementById('nav-edit').classList.add('active');
       if (page === 'bookings') document.getElementById('nav-bookings').classList.add('active');
+      if (page === 'verify') document.getElementById('nav-verify').classList.add('active');
     }
 
     async function loadHtmlIntoMain(url, titleText) {
@@ -349,7 +365,133 @@
           });
 
       } else if (page === 'bookings') {
-        loadHtmlIntoMain('admin-bookings.html', 'Booking Overview');
+        loadHtmlIntoMain('admin-bookings.html', 'Booking Overview')
+          .then(() => {
+            loadBookings();
+          });
+      } else if (page === 'verify') {
+        renderVerifyPage();
+      }
+    }
+
+    function renderVerifyPage() {
+      const main = document.getElementById('mainContent');
+      main.innerHTML = `
+         <div class="content-card">
+            <h2 class="content-title">Verify Ticket</h2>
+            <p class="content-subtitle">Enter Booking ID from the ticket QR code to verify and admit attendees.</p>
+            
+            <div style="max-width:400px; margin-top:20px;">
+               <div style="display:flex; gap:10px;">
+                  <input type="number" id="verifyBookingId" placeholder="Enter Booking ID" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                  <button id="btnCheckTicket" style="background:#00a8ff; color:#fff; border:none; padding:0 20px; border-radius:8px; cursor:pointer; font-weight:600;">Check</button>
+               </div>
+               
+               <div id="verifyResult" style="margin-top:20px; display:none;">
+                   <div id="verifyCard" style="padding:20px; border-radius:12px; border:1px solid #eee; background:#f9f9f9;">
+                      <h3 id="vEventTitle" style="margin-top:0; color:#04345c;">Event Title</h3>
+                      <div style="margin-bottom:8px;"><strong>Booking ID:</strong> <span id="vBid"></span></div>
+                      <div style="margin-bottom:8px;"><strong>User ID:</strong> <span id="vUid"></span></div>
+                      <div style="margin-bottom:8px;"><strong>Status:</strong> <span id="vStatus" style="font-weight:bold;"></span></div>
+                      <div style="margin-bottom:8px;"><strong>Seats:</strong> <span id="vSeats"></span></div>
+                      
+                      <div id="vActions" style="margin-top:20px;">
+                         <button id="btnAdmit" style="width:100%; padding:12px; background:#4caf50; color:white; border:none; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer;">ADMIT (CHECK-IN)</button>
+                      </div>
+                   </div>
+               </div>
+            </div>
+         </div>
+       `;
+
+      document.getElementById('btnCheckTicket').onclick = checkTicket;
+    }
+
+    async function checkTicket() {
+      const id = document.getElementById('verifyBookingId').value;
+      if (!id) { alert('Enter ID'); return; }
+
+      const resDiv = document.getElementById('verifyResult');
+      resDiv.style.display = 'none';
+
+      try {
+        // We don't have a direct "get booking by id" for admin exposed in Controller easily?
+        // Controller has: GET /api/bookings (all), GET /api/bookings/user/{id}
+        // But usually Repositories have findById. 
+        // Wait, PUT /api/bookings/{id}/status exists.
+        // And usually there is a get by id. Let's check BookingController again.
+        // It DOES NOT have a specific getBookingById endpoint in the snippet I saw earlier!
+        // It has getAllBookings, create, getBookingsForUser, updateStatus, delete.
+
+        // Workaround: Get ALL and filter (inefficient but works for demo). 
+        // OR Add endpoint. For now, I will use getAllBookings and find one. 
+        // Wait, I am an AI, I can update the backend too if needed, but the user said "make qr scannable... and give access to admin for confirmation".
+        // I should verify if I can easily add the endpoint or just use the workaround. 
+        // Given the context, get all is fine for a demo.
+
+        const res = await fetch(API_BASE + '/api/bookings');
+        if (!res.ok) throw new Error('Failed to fetch bookings');
+        const all = await res.json();
+        const booking = all.find(b => b.id == id);
+
+        if (!booking) {
+          alert('Booking ID not found!');
+          return;
+        }
+
+        // Need event details too for title
+        const evRes = await fetch(API_BASE + '/api/events');
+        const events = await evRes.json();
+        const event = events.find(e => e.id == booking.eventId);
+
+        resDiv.style.display = 'block';
+        document.getElementById('vEventTitle').textContent = event ? event.title : 'Unknown Event';
+        document.getElementById('vBid').textContent = booking.id;
+        document.getElementById('vUid').textContent = booking.userId;
+        document.getElementById('vStatus').textContent = booking.status;
+        document.getElementById('vSeats').textContent = booking.seats || 'None';
+
+        const vStatus = document.getElementById('vStatus');
+        if (booking.status === 'CHECKED_IN') {
+          vStatus.style.color = 'green';
+          document.getElementById('btnAdmit').disabled = true;
+          document.getElementById('btnAdmit').textContent = 'ALREADY CHECKED IN';
+          document.getElementById('btnAdmit').style.background = '#ccc';
+        } else if (booking.status === 'CANCELLED') {
+          vStatus.style.color = 'red';
+          document.getElementById('btnAdmit').disabled = true;
+          document.getElementById('btnAdmit').textContent = 'TICKET CANCELLED';
+          document.getElementById('btnAdmit').style.background = '#ef5350';
+        } else {
+          vStatus.style.color = 'orange';
+          document.getElementById('btnAdmit').disabled = false;
+          document.getElementById('btnAdmit').textContent = 'ADMIT (CHECK-IN)';
+          document.getElementById('btnAdmit').style.background = '#4caf50';
+          document.getElementById('btnAdmit').onclick = () => admitUser(booking.id);
+        }
+
+      } catch (e) {
+        console.error(e);
+        alert('Error validating ticket');
+      }
+    }
+
+    async function admitUser(id) {
+      try {
+        const res = await fetch(API_BASE + '/api/bookings/' + id + '/status', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'CHECKED_IN' })
+        });
+        if (res.ok) {
+          alert('Success! User checked in.');
+          checkTicket(); // refresh
+        } else {
+          alert('Failed to update status');
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Error');
       }
     }
 
@@ -662,6 +804,122 @@
         index = (index + 1) % slides.length;
         show(index);
       }, 3000);
+    }
+
+    // --- BOOKING LOGIC ---
+    let allBookings = [];
+
+    async function loadBookings() {
+      const tbody = document.querySelector('#bookingsTable tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="10">Loading...</td></tr>';
+
+      try {
+        const res = await fetch(API_BASE + '/api/bookings');
+        if (!res.ok) {
+          console.error('Failed to load bookings, status =', res.status);
+          tbody.innerHTML = '<tr><td colspan="10">Failed to connect to server.</td></tr>';
+          return;
+        }
+        const data = await res.json();
+        allBookings = data;
+        renderTable(allBookings);
+        updateStats(allBookings);
+      } catch (err) {
+        console.error('Error loading bookings:', err);
+        tbody.innerHTML = '<tr><td colspan="10">Error connecting to server.</td></tr>';
+      }
+    }
+
+    function renderTable(bookings) {
+      const tbody = document.querySelector('#bookingsTable tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (!bookings || bookings.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">No bookings found.</td></tr>';
+        return;
+      }
+
+      bookings.forEach(b => {
+        const tr = document.createElement('tr');
+
+        const bookingId = b.id;
+        const eventTitle = b.eventTitle || ('Event #' + b.eventId);
+        const eventDateTime = b.eventDateTime ? b.eventDateTime.replace('T', ' ') : '';
+        const userName = b.userName || ('User #' + b.userId);
+        const tickets = b.tickets;
+        const paymentMode = b.paymentMode || '';
+        const paymentStatus = b.paymentStatus || 'PAID';
+        const status = b.status || 'CONFIRMED';
+        const createdAt = b.createdAt ? b.createdAt.replace('T', ' ') : '';
+
+        tr.innerHTML = `
+          <td>${bookingId}</td>
+          <td>${eventTitle}</td>
+          <td>${eventDateTime}</td>
+          <td>${userName}</td>
+          <td>${tickets}</td>
+          <td>${paymentMode}</td>
+          <td>${paymentStatus}</td>
+          <td>${status}</td>
+          <td>${createdAt}</td>
+          <td class="actions">
+             ${status !== 'CONFIRMED' ? `<button class="btn-confirm" onclick="changeStatus(${bookingId}, 'CONFIRMED')">Confirm</button>` : ''}
+             ${status !== 'CANCELLED' ? `<button class="btn-cancel" onclick="changeStatus(${bookingId}, 'CANCELLED')">Cancel</button>` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateStats(bookings) {
+      const totalEl = document.getElementById('stat-total');
+      if (!totalEl) return;
+      totalEl.textContent = bookings.length;
+      document.getElementById('stat-confirmed').textContent = bookings.filter(b => b.status === 'CONFIRMED').length;
+      document.getElementById('stat-pending').textContent = bookings.filter(b => b.status === 'PENDING').length;
+      document.getElementById('stat-cancelled').textContent = bookings.filter(b => b.status === 'CANCELLED').length;
+    }
+
+    function applyFilters() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const status = document.getElementById('statusFilter').value;
+
+      const filtered = allBookings.filter(b => {
+        const bookingId = (b.id + '').toLowerCase();
+        const eventTitle = (b.eventTitle || '').toLowerCase();
+        const userName = (b.userName || '').toLowerCase();
+
+        const matchesSearch = bookingId.includes(search) || eventTitle.includes(search) || userName.includes(search);
+        const matchesStatus = status ? b.status === status : true;
+        return matchesSearch && matchesStatus;
+      });
+      renderTable(filtered);
+      updateStats(filtered);
+    }
+
+    function resetFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('statusFilter').value = '';
+      renderTable(allBookings);
+      updateStats(allBookings);
+    }
+
+    async function changeStatus(bookingId, newStatus) {
+      if (!confirm('Mark booking #' + bookingId + ' as ' + newStatus + '?')) return;
+      try {
+        const res = await fetch(API_BASE + '/api/bookings/' + bookingId + '/status', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+        if (res.ok) {
+          loadBookings();
+        } else {
+          alert('Failed to update status');
+        }
+      } catch (e) { console.error(e); }
     }
 
   </script>

@@ -5,6 +5,7 @@
   <meta charset="UTF-8" />
   <title>User Dashboard - Event Mate AI</title>
   <link rel="stylesheet" href="dashboard.css" />
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -189,10 +190,6 @@
           <span>Events</span>
         </button>
 
-        <button class="nav-btn" id="nav-booking" onclick="openPage('booking')">
-          <span class="icon">📝</span>
-          <span>Booking</span>
-        </button>
 
         <button class="nav-btn" id="nav-mybookings" onclick="openPage('my-bookings')">
           <span class="icon">📂</span>
@@ -237,7 +234,7 @@
       document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
       if (page === 'home') document.getElementById('nav-home').classList.add('active');
       if (page === 'events') document.getElementById('nav-events').classList.add('active');
-      if (page === 'booking') document.getElementById('nav-booking').classList.add('active');
+
       if (page === 'my-bookings') document.getElementById('nav-mybookings').classList.add('active');
     }
 
@@ -309,9 +306,10 @@
       } else if (page === 'events') {
         renderEventsPage();
       } else if (page === 'booking') {
+        // booking page handling removed from sidebar, but keeping route just in case or redirect
         loadHtmlIntoMain('booking.html', 'Booking');
       } else if (page === 'my-bookings') {
-        loadHtmlIntoMain('user-my-bookings.html', 'My Bookings');
+        renderMyBookingsPage();
       }
     }
 
@@ -329,11 +327,6 @@
             </p>
             <div id="eventsList" class="events-list">
               <p class="loading-text">Loading events...</p>
-            </div>
-            <div id="eventDetailsArea" class="event-details-card" style="display:none;">
-              <p class="event-details-empty">
-                Select an event above to view its full details here.
-              </p>
             </div>
           </div>
         </div>
@@ -422,8 +415,13 @@
           <div class="event-details-row"><span class="event-details-label">Cost:</span> ${ev.currency || ''} ${ev.costPerTicket ?? 'Free'}</div>
           <div class="event-details-row"><span class="event-details-label">Status:</span> ${ev.status || 'Active'}</div>
           <div class="event-details-row" style="margin-top:8px;">
-            <span class="event-details-label">Description:</span>
             <span>${ev.description || 'No description provided.'}</span>
+          </div>
+          
+          <div style="margin-top: 16px; text-align: right;">
+             <a href="user-booking.html?id=${ev.id}" class="btn-primary" style="background:#00a8ff; color:#fff; padding:8px 16px; border-radius:999px; text-decoration:none; display:inline-block; font-weight:600;">
+               Book Now
+             </a>
           </div>
        `;
 
@@ -433,6 +431,178 @@
       });
 
       item.parentNode.insertBefore(detailsContainer, item.nextSibling);
+    }
+
+
+    // --- MY BOOKINGS LOGIC ---
+    let eventsCache = [];
+
+    async function loadEventsCache() {
+      if (eventsCache.length > 0) return;
+      try {
+        const res = await fetch(API_BASE + '/api/events');
+        if (res.ok) eventsCache = await res.json();
+      } catch (e) { console.error(e); }
+    }
+
+    async function renderMyBookingsPage() {
+      const main = document.getElementById('mainContent');
+      main.innerHTML = `
+        <div class="content-card">
+          <h1 class="content-title">My Bookings</h1>
+          <p class="content-subtitle">
+            View all events you have booked tickets for in EventMate AI.
+          </p>
+          
+          <!-- List Container -->
+          <div id="bookingsContainer">
+            <p class="loading-text">Loading bookings...</p>
+          </div>
+
+          <!-- Details / QR Code Container (Hidden by default) -->
+          <div id="bookingDetailsPanel" style="display:none; margin-top:20px; border-top:1px solid #e0e0e0; padding-top:20px;">
+             <button onclick="closeBookingDetails()" style="margin-bottom:10px; background:transparent; border:1px solid #ccc; padding:4px 10px; border-radius:4px; cursor:pointer;">&larr; Back to list</button>
+             <div style="background:#f9fdff; border:1px solid #cceeff; border-radius:12px; padding:20px; display:flex; gap:20px; flex-wrap:wrap;">
+                
+                <!-- QR Code Side -->
+                <div style="flex-shrink:0; text-align:center;">
+                   <div style="background:#fff; padding:10px; border:1px dashed #ccc; border-radius:8px; display:inline-block;">
+                      <canvas id="qrCanvas"></canvas>
+                   </div>
+                   <div style="font-size:12px; color:#666; margin-top:5px;">Scan to Verify</div>
+                </div>
+
+                <!-- Info Side -->
+                <div style="flex:1; font-size:14px; color:#333;">
+                   <h2 id="bdEventTitle" style="color:#04345c; margin-top:0;">Event Title</h2>
+                   <div id="bdInfo" style="display:grid; gap:8px;"></div>
+                </div>
+             </div>
+          </div>
+
+        </div>
+      `;
+
+      await loadEventsCache();
+
+      try {
+        const userId = 1;
+        let url = API_BASE + '/api/bookings/user/' + userId;
+
+        let res = await fetch(url);
+        if (!res.ok) {
+          url = API_BASE + '/api/bookings';
+          res = await fetch(url);
+        }
+
+        if (!res.ok) {
+          document.getElementById('bookingsContainer').innerHTML = '<p class="error-text">Failed to load bookings.</p>';
+          return;
+        }
+
+        let bookings = await res.json();
+
+        if (url.endsWith('/bookings')) {
+          bookings = bookings.filter(b => b.userId == 1);
+        }
+
+        renderBookingsList(bookings);
+
+      } catch (err) {
+        console.error(err);
+        const c = document.getElementById('bookingsContainer');
+        if (c) c.innerHTML = '<p class="error-text">Error connecting to server.</p>';
+      }
+    }
+
+    function renderBookingsList(bookings) {
+      const container = document.getElementById('bookingsContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (!bookings || bookings.length === 0) {
+        container.innerHTML = '<p class="loading-text">You have not booked any events yet.</p>';
+        return;
+      }
+
+      bookings.forEach(b => {
+        const card = document.createElement('div');
+        card.style.background = '#e9f7ff';
+        card.style.borderRadius = '12px';
+        card.style.padding = '16px';
+        card.style.marginBottom = '12px';
+        card.style.border = '1px solid #d0e4f2';
+        card.style.cursor = 'pointer'; // clickable
+        card.title = "Click to view ticket & QR code";
+
+        const event = eventsCache.find(e => e.id == b.eventId);
+        const eventTitle = event ? event.title : ('Event #' + b.eventId);
+        const date = b.eventDateTime ? new Date(b.eventDateTime).toLocaleString() : 'Date not set';
+
+        card.innerHTML = `
+            <h3 style="margin:0 0 8px; color:#04345c; font-size:16px;">${eventTitle}</h3>
+            <div style="font-size:13px; color:#5b7285;">
+               <div><strong>Date:</strong> ${date}</div>
+               <div><strong>Tickets:</strong> ${b.tickets}</div>
+               <div><strong>Status:</strong> ${b.status || 'CONFIRMED'}</div>
+            </div>
+            <div style="margin-top:8px; font-size:12px; color:#00a8ff; font-weight:600;">
+               Click to view details & QR Code
+            </div>
+          `;
+
+        card.onclick = () => showBookingDetails(b);
+        container.appendChild(card);
+      });
+    }
+
+    function showBookingDetails(b) {
+      document.getElementById('bookingsContainer').style.display = 'none';
+      document.getElementById('bookingDetailsPanel').style.display = 'block';
+
+      const event = eventsCache.find(e => e.id == b.eventId);
+      const eventTitle = event ? event.title : ('Event #' + b.eventId);
+
+      document.getElementById('bdEventTitle').textContent = eventTitle;
+
+      const infoDiv = document.getElementById('bdInfo');
+      const date = b.eventDateTime ? new Date(b.eventDateTime).toLocaleString() : 'N/A';
+
+      const seats = b.seats || 'N/A';
+      const payment = b.paymentMode || 'N/A';
+      const status = b.status || 'CONFIRMED';
+      const bookingId = b.id || '-';
+
+      infoDiv.innerHTML = `
+          <div><strong>Booking ID:</strong> ${bookingId}</div>
+          <div><strong>Date & Time:</strong> ${date}</div>
+          <div><strong>Venue:</strong> ${event ? (event.venue || 'N/A') : 'N/A'}</div>
+          <div><strong>Tickets:</strong> ${b.tickets}</div>
+          <div><strong>Seats:</strong> ${seats}</div>
+          <div><strong>Payment Mode:</strong> ${payment}</div>
+          <div><strong>Status:</strong> <span style="color:${status === 'CONFIRMED' ? 'green' : 'red'}">${status}</span></div>
+       `;
+
+      // Draw QR
+      const qrText = `BID:${bookingId}|EV:${eventTitle}|T:${b.tickets}|S:${seats}`;
+      drawSimpleQr('qrCanvas', qrText);
+    }
+
+    function closeBookingDetails() {
+      document.getElementById('bookingDetailsPanel').style.display = 'none';
+      document.getElementById('bookingsContainer').style.display = 'block';
+    }
+
+    // Real QR Generator using qrcode.js
+    function drawSimpleQr(canvasId, text) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+
+      // Use the global QRCode object from CDN
+      QRCode.toCanvas(canvas, text, { width: 150, margin: 1 }, function (error) {
+        if (error) console.error(error);
+        else console.log('QR Code generated!');
+      });
     }
 
 
