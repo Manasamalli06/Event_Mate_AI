@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Login - EventMate AI</title>
+  <link rel="stylesheet" href="dashboard.css" />
+  <style>
+    .auth-form label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #04345c;
+      margin-bottom: 4px;
+    }
+
+    .auth-form input {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #c5d8e6;
+      font-size: 13px;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+    }
+
+    .auth-form button {
+      width: 100%;
+      border-radius: 999px;
+      padding: 9px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: #00a8ff;
+      color: #ffffff;
+      margin-top: 8px;
+    }
+
+    .auth-form button:hover {
+      background: #008ad1;
+    }
+
+    .auth-footer-text {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #5b7285;
+      text-align: center;
+    }
+
+    .auth-footer-text a {
+      color: #00a8ff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .forgot-row {
+      text-align: right;
+      margin-top: -4px;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    .forgot-row a {
+      color: #00a8ff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="auth-logo-circle">E</div>
+        <div class="auth-brand-text">
+          <h1>📅 EVENTMATE <span>AI</span> 🎫</h1>
+          <p>Plan, publish and track every event with intelligent ticketing.</p>
+        </div>
+      </div>
+
+      <h2 class="auth-title">Welcome back</h2>
+      <p class="auth-subtitle">Sign in to manage your events, bookings and attendees.</p>
+
+      <form class="auth-form" onsubmit="return handleLogin(event)">
+        <label for="email">Email</label>
+        <input type="email" id="email" required placeholder="you@example.com" />
+
+        <label for="password">Password</label>
+        <input type="password" id="password" required placeholder="••••••••" />
+
+        <label>Login as:</label>
+        <div style="display:flex; gap:15px; margin-bottom:15px;">
+          <div>
+            <input type="radio" id="roleUser" name="role" value="user" checked>
+            <label for="roleUser" style="display:inline; font-weight:normal;">User</label>
+          </div>
+          <div>
+            <input type="radio" id="roleAdmin" name="role" value="admin">
+            <label for="roleAdmin" style="display:inline; font-weight:normal;">Admin</label>
+          </div>
+        </div>
+
+        <!-- Forgot Password link -->
+        <div class="forgot-row">
+          <a href="forgot-password.html">Forgot Password?</a>
+        </div>
+
+        <button type="submit">Login</button>
+      </form>
+
+      <div class="auth-footer-text">
+        New to EventMate AI?
+        <a href="index.html">Create an account</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function handleLogin(event) {
+      event.preventDefault();
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const role = document.querySelector('input[name="role"]:checked').value;
+
+      if (!email || !password) {
+        alert('Please enter email and password.');
+        return false;
+      }
+
+      try {
+        const res = await fetch('http://localhost:9098/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, role })
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          alert('Login failed: ' + (text || 'Invalid credentials'));
+          return false;
+        }
+
+        const data = await res.json();
+        const roleFromBackend = (data.role || '').toLowerCase();
+
+        try {
+          localStorage.setItem('eventmate_role', roleFromBackend);
+          if (data.userId) {
+            localStorage.setItem('eventmate_userId', data.userId);
+          }
+          if (data.token) {
+            localStorage.setItem('eventmate_token', data.token);
+          }
+        } catch (e) {
+          console.warn('Could not write to localStorage:', e);
+        }
+
+        if (roleFromBackend === 'admin') {
+          window.location.href = 'admin-home.html';
+        } else {
+          window.location.href = 'user-home.html';
+        }
+      } catch (err) {
+        console.error('Error during login:', err);
+        alert('Error connecting to server: ' + err.message);
+      }
+
+      return false;
+    }
+  </script>
+</body>
+
+</html>

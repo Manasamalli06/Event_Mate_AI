@@ -1,0 +1,5 @@
+- [x] Add Order Summary card above Confirm Booking button in user-booking.html
+- [x] Include Ticket Price, Number of Tickets, Seat Price, Total Amount
+- [x] Update dynamically on event/ticket changes
+- [x] Update ReminderScheduler to create reminders 3 days before events
+- [x] Update EmailService to use configured from email instead of hardcoded

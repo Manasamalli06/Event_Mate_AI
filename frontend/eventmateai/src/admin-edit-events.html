@@ -1,0 +1,72 @@
+<div class="events-wrapper">
+  <h1 class="events-title">Manage Events</h1>
+  <p class="events-subtitle">
+    Edit event details or remove events that are no longer needed.
+  </p>
+
+  <div class="events-table-wrapper">
+    <table id="eventsTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Date &amp; Time</th>
+          <th>Venue</th>
+          <th>Category</th>
+          <th>Tickets</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- rows via JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Inline edit panel -->
+  <div id="editPanel" class="edit-panel" style="display:none;">
+    <h2>Edit Event</h2>
+    <form id="editEventForm">
+      <input type="hidden" id="editId" />
+
+      <label for="editTitle">Title</label>
+      <input type="text" id="editTitle" />
+
+      <label for="editDate">Date</label>
+      <input type="date" id="editDate" />
+
+      <label for="editTime">Time</label>
+      <input type="time" id="editTime" />
+
+      <label for="editVenue">Venue</label>
+      <input type="text" id="editVenue" />
+
+      <label for="editCategory">Category</label>
+      <input type="text" id="editCategory" />
+
+      <label for="editStatus">Status</label>
+      <select id="editStatus">
+        <option value="ACTIVE">Active</option>
+        <option value="DRAFT">Draft</option>
+        <option value="CANCELLED">Cancelled</option>
+      </select>
+
+      <label for="editDescription">Description</label>
+      <textarea id="editDescription"></textarea>
+
+      <label for="editSeats">Available Seats</label>
+      <input type="number" id="editSeats" min="0" />
+
+      <label for="editCost">Cost Per Ticket</label>
+      <input type="number" id="editCost" min="0" step="0.01" />
+
+      <label for="editCurrency">Currency</label>
+      <input type="text" id="editCurrency" placeholder="INR / USD / EUR" />
+
+      <div class="edit-actions">
+        <button type="button" class="btn-outline" id="btnCancelEdit">Cancel</button>
+        <button type="submit" class="btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>

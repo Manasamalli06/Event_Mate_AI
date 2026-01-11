@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>User Profile - Event Mate AI</title>
+  <link rel="stylesheet" href="dashboard.css" />
+  <style>
+    .profile-wrapper {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    .profile-title {
+      font-size: 24px;
+      color: #04345c;
+      margin-bottom: 6px;
+    }
+
+    .profile-subtitle {
+      font-size: 14px;
+      color: #5b7285;
+      margin-bottom: 18px;
+    }
+
+    .profile-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 18px 20px;
+      box-shadow: 0 8px 22px rgba(4,52,92,0.16);
+      box-sizing: border-box;
+    }
+
+    .profile-section-title {
+      font-size: 16px;
+      color: #04345c;
+      margin: 0 0 8px;
+      font-weight: 600;
+    }
+
+    .profile-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .profile-label {
+      color: #5b7285;
+    }
+
+    .profile-value {
+      color: #04345c;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .profile-actions {
+      margin-top: 16px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn-outline,
+    .btn-primary {
+      border-radius: 999px;
+      padding: 8px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-outline {
+      border: 1px solid #00a8ff;
+      background: transparent;
+      color: #00a8ff;
+    }
+
+    .btn-primary {
+      background: #00a8ff;
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: #008ad1;
+    }
+
+    /* Avatar picker styles */
+    .avatar-section {
+      margin-top: 12px;
+    }
+
+    .avatar-modes {
+      display: flex;
+      gap: 8px;
+      margin: 8px 0 10px;
+      flex-wrap: wrap;
+    }
+
+    .avatar-mode-btn {
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 12px;
+      border: 1px solid #c6d4e5;
+      background: #f5f8fc;
+      color: #04345c;
+      cursor: pointer;
+    }
+
+    .avatar-mode-btn.active {
+      border-color: #00a8ff;
+      background: #e6f6ff;
+      color: #00a8ff;
+    }
+
+    .avatar-upload {
+      margin-bottom: 10px;
+      display: none;
+    }
+
+    .avatar-upload input[type="file"] {
+      font-size: 12px;
+    }
+
+    .avatar-list {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .avatar-list label {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .avatar-list input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .avatar-option {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      object-fit: cover;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .avatar-list input[type="radio"]:checked + .avatar-option {
+      border-color: #00a8ff;
+      transform: scale(1.05);
+    }
+
+    .avatar-preview {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #5b7285;
+    }
+
+    .avatar-preview-img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid #c6d4e5;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+  <!-- floating emojis layer -->
+  <div class="floating-emoji-layer" id="floatingEmojiLayer"></div>
+
+    <main class="app-main">
+
+      <div class="profile-wrapper">
+        <h1 class="profile-title">My Profile</h1>
+        <p class="profile-subtitle">
+          View your account details and manage your profile.
+        </p>
+
+        <div class="profile-card">
+          <h2 class="profile-section-title">Account details</h2>
+
+          <div class="profile-row">
+            <span class="profile-label">Name</span>
+            <span class="profile-value">
+              <span id="userNameDisplay">User</span>
+              <input id="userNameInput" type="text"
+                     style="display:none; width:180px; font-size:13px;">
+            </span>
+          </div>
+          <div class="profile-row">
+            <span class="profile-label">Email</span>
+            <span class="profile-value">
+              <span id="userEmailDisplay">user@example.com</span>
+              <input id="userEmailInput" type="email"
+                     style="display:none; width:180px; font-size:13px;">
+            </span>
+          </div>
+          <div class="profile-row">
+            <span class="profile-label">Role</span>
+            <span class="profile-value">User</span>
+          </div>
+
+          <!-- Avatar selection section -->
+          <div class="avatar-section">
+            <h2 class="profile-section-title">Avatar</h2>
+
+            <!-- Button to open avatar chooser -->
+            <button type="button"
+                    class="avatar-mode-btn active"
+                    id="openAvatarChooserBtn"
+                    onclick="toggleAvatarChooser()">
+              Choose / create avatar
+            </button>
+
+            <!-- Hidden avatar chooser panel -->
+            <div id="avatarChooserPanel" style="display:none; margin-top:10px;">
+              <div class="avatar-modes">
+                <button type="button" class="avatar-mode-btn active"
+                        data-mode="choose" onclick="setAvatarMode('choose')">
+                  Preset avatars
+                </button>
+                <button type="button" class="avatar-mode-btn"
+                        data-mode="upload" onclick="setAvatarMode('upload')">
+                  Upload photo
+                </button>
+                <button type="button" class="avatar-mode-btn"
+                        data-mode="ai" onclick="setAvatarMode('ai')">
+                  Generate with AI
+                </button>
+              </div>
+
+              <!-- upload -->
+              <div class="avatar-upload" id="avatarUploadBox">
+                <input type="file" id="avatarFileInput" accept="image/*">
+              </div>
+
+              <!-- preset avatars (4 options) -->
+              <div class="avatar-list" id="avatarList">
+                <label>
+                  <input type="radio" name="avatar" value="images/avatars/girl1.png" checked>
+                  <img src="images/avatars/avatar1.png" alt="Avatar 1" class="avatar-option">
+                </label>
+                <label>
+                  <input type="radio" name="avatar" value="images/avatars/girl2.png">
+                  <img src="images/avatars/avatar2.png" alt="Avatar 2" class="avatar-option">
+                </label>
+                <label>
+                  <input type="radio" name="avatar" value="images/avatars/boy1.png">
+                  <img src="images/avatars/avatar3.png" alt="Avatar 3" class="avatar-option">
+                </label>
+                <label>
+                  <input type="radio" name="avatar" value="images/avatars/boy2.png">
+                  <img src="images/avatars/avatar4.png" alt="Avatar 4" class="avatar-option">
+                </label>
+              </div>
+            </div>
+
+            <div class="avatar-preview">
+              Current avatar:
+              <img id="avatarPreviewImg"
+                   src="images/avatars/avatar2.png"
+                   alt="Current avatar"
+                   class="avatar-preview-img">
+            </div>
+          </div>
+
+          <hr style="margin:12px 0; border:none; border-top:1px solid #e0e6ee;" />
+
+          <div class="profile-actions">
+            <button type="button" class="btn-outline"
+                    onclick="window.location.href='user-dashboard.html'">
+              Go to Dashboard
+            </button>
+            <button type="button" class="btn-primary"
+                    id="editProfileBtn" onclick="toggleEditProfile()">
+              Edit Profile
+            </button>
+            <button type="button" class="btn-primary"
+                    id="saveProfileBtn" style="display:none;"
+                    onclick="handleSaveProfile()">
+              Save Profile
+            </button>
+             <button type="button" class="logout-btn" onclick="handleLogout()" style="background: #ff4d4f; color: white; border: none; padding: 8px 20px; border-radius: 999px; font-weight: 600; cursor: pointer; margin-left: 10px;">
+                Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+  <!-- floating emojis script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const emojiLayer = document.getElementById('floatingEmojiLayer');
+      if (!emojiLayer) return;
+
+      const EMOJIS = ['🎉','🎊','🎈','🥳','🎂','🎟️','🎫','✨','🍾','🎵','🎤','🎧','📅'];
+
+      function createEmojiBubble() {
+        const span = document.createElement('span');
+        span.className = 'emoji-bubble';
+        span.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+
+        const startLeft = Math.random() * 100;
+        const startTop  = Math.random() * 100;
+        const dx = (Math.random() * 40 - 20);
+        const dy = (Math.random() * 40 - 20);
+        const duration = 6 + Math.random() * 6;
+
+        span.style.left = startLeft + 'vw';
+        span.style.top  = startTop + 'vh';
+        span.style.setProperty('--dx', dx + 'vw');
+        span.style.setProperty('--dy', dy + 'vh');
+        span.style.animationDuration = duration + 's';
+
+        emojiLayer.appendChild(span);
+        setTimeout(() => span.remove(), duration * 1000);
+      }
+
+      setInterval(createEmojiBubble, 800);
+
+      // hook avatar radio change
+      document.querySelectorAll('input[name="avatar"]').forEach(radio => {
+        radio.addEventListener('change', updateAvatarPreviewFromChoice);
+      });
+    });
+  </script>
+
+  <script>
+    const API_BASE = 'http://localhost:9098';
+
+    function handleLogout() {
+      // Clear local storage or session if needed
+      localStorage.removeItem('eventmate_token');
+      localStorage.removeItem('eventmate_role');
+      localStorage.removeItem('eventmate_userId');
+      window.location.href = 'login.html';
+    }
+
+    function handleBackDashboard() {
+        window.location.href = 'user-dashboard.html';
+    }
+
+    // ----- Avatar logic -----
+    function toggleAvatarChooser() {
+      const panel = document.getElementById('avatarChooserPanel');
+      if (!panel) return;
+      panel.style.display =
+        panel.style.display === 'none' || panel.style.display === '' ? 'block' : 'none';
+    }
+
+    function setAvatarMode(mode) {
+      document.querySelectorAll('.avatar-mode-btn[data-mode]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+
+      const uploadBox = document.getElementById('avatarUploadBox');
+      const avatarList = document.getElementById('avatarList');
+
+      if (mode === 'upload') {
+        uploadBox.style.display = 'block';
+        avatarList.style.display = 'none';
+      } else {
+        uploadBox.style.display = 'none';
+        avatarList.style.display = 'flex';
+        if (mode === 'ai') {
+          alert('AI avatar generation is not implemented yet. Later you can call an AI API here.');
+        }
+      }
+    }
+
+    function updateAvatarPreviewFromChoice() {
+      const checkedAvatar = document.querySelector('input[name="avatar"]:checked');
+      if (!checkedAvatar) return;
+      document.getElementById('avatarPreviewImg').src = checkedAvatar.value;
+    }
+
+    const avatarFileInput = document.getElementById('avatarFileInput');
+    if (avatarFileInput) {
+      avatarFileInput.addEventListener('change', () => {
+        const file = avatarFileInput.files[0];
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        document.getElementById('avatarPreviewImg').src = url;
+      });
+    }
+
+    // ----- Edit profile logic -----
+    let editMode = false;
+
+    function toggleEditProfile() {
+      editMode = !editMode;
+
+      const nameDisplay = document.getElementById('userNameDisplay');
+      const emailDisplay = document.getElementById('userEmailDisplay');
+      const nameInput = document.getElementById('userNameInput');
+      const emailInput = document.getElementById('userEmailInput');
+      const editBtn = document.getElementById('editProfileBtn');
+      const saveBtn = document.getElementById('saveProfileBtn');
+
+      if (editMode) {
+        nameInput.value = nameDisplay.textContent;
+        emailInput.value = emailDisplay.textContent;
+
+        nameDisplay.style.display = 'none';
+        emailDisplay.style.display = 'none';
+        nameInput.style.display = 'inline-block';
+        emailInput.style.display = 'inline-block';
+
+        editBtn.style.display = 'none';
+        saveBtn.style.display = 'inline-block';
+      } else {
+        nameDisplay.style.display = 'inline';
+        emailDisplay.style.display = 'inline';
+        nameInput.style.display = 'none';
+        emailInput.style.display = 'none';
+
+        editBtn.style.display = 'inline-block';
+        saveBtn.style.display = 'none';
+      }
+    }
+
+    function handleSaveProfile() {
+      const nameInput = document.getElementById('userNameInput');
+      const emailInput = document.getElementById('userEmailInput');
+      const nameDisplay = document.getElementById('userNameDisplay');
+      const emailDisplay = document.getElementById('userEmailDisplay');
+
+      const modeBtn = document.querySelector('.avatar-mode-btn[data-mode].active');
+      const mode = modeBtn ? modeBtn.dataset.mode : 'choose';
+
+      let avatarValue = null;
+      if (mode === 'choose') {
+        const checkedAvatar = document.querySelector('input[name="avatar"]:checked');
+        avatarValue = checkedAvatar ? checkedAvatar.value : null;
+      } else if (mode === 'upload') {
+        const file = avatarFileInput && avatarFileInput.files[0];
+        avatarValue = file ? ('[local-file] ' + file.name) : null;
+      } else if (mode === 'ai') {
+        avatarValue = '[ai-generated-placeholder]';
+      }
+
+      // For now just update UI; later send to backend via fetch()
+      nameDisplay.textContent = nameInput.value || 'User';
+      emailDisplay.textContent = emailInput.value || 'user@example.com';
+
+      console.log('Saving profile:', {
+        name: nameInput.value,
+        email: emailInput.value,
+        avatarMode: mode,
+        avatar: avatarValue
+      });
+
+      alert('Profile saved locally (wire this to backend later).');
+
+      // exit edit mode
+      editMode = true;
+      toggleEditProfile();
+    }
+  </script>
+</body>
+</html>
