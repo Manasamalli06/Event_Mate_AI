@@ -14,7 +14,7 @@
       font-size: 22px;
       color: #04345c;
       margin: 0 0 6px;
-      text-align: center;          /* center heading */
+      text-align: center;
       font-weight: 700;
     }
     .reminders-subtitle {
@@ -168,50 +168,46 @@
   <!-- floating emojis layer -->
   <div class="floating-emoji-layer" id="floatingEmojiLayer"></div>
 
+  <main class="app-main">
+    <div style="display:flex; align-items:center; margin-bottom:12px;"></div>
 
+    <div class="reminders-wrapper">
+      <!-- centered heading -->
+      <h1 class="reminders-title">Event Reminders</h1>
+      <p class="reminders-subtitle">
+        Manage upcoming reminders and notification settings for your events.
+      </p>
 
-    <main class="app-main">
-      <div style="display:flex; align-items:center; margin-bottom:12px;">
+      <!-- White box 1: Upcoming Reminders -->
+      <section class="reminder-section">
+        <h2 class="section-heading">Upcoming Event Reminders</h2>
+        <div id="upcomingReminders">
+          <!-- Filled by JS -->
+        </div>
+      </section>
 
+      <!-- White box 2: Notification Preferences -->
+      <section class="reminder-section">
+        <h2 class="section-heading">Notification Preferences</h2>
 
-      <div class="reminders-wrapper">
-        <!-- centered heading like screenshot -->
-        <h1 class="reminders-title">Event Reminders</h1>
-        <p class="reminders-subtitle">
-          Manage upcoming reminders and notification settings for your events.
-        </p>
+        <div class="pref-row">
+          <span>Email Notifications</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="emailToggle" />
+            <span class="slider-round"></span>
+          </label>
+        </div>
 
-        <!-- White box 1: Upcoming Reminders -->
-        <section class="reminder-section">
-          <h2 class="section-heading">Upcoming Event Reminders</h2>
-          <div id="upcomingReminders">
-            <!-- Filled by JS -->
-          </div>
-        </section>
-
-        <!-- White box 2: Notification Preferences -->
-        <section class="reminder-section">
-          <h2 class="section-heading">Notification Preferences</h2>
-
-          <div class="pref-row">
-            <span>Email Notifications</span>
-            <label class="toggle-switch">
-              <input type="checkbox" id="emailToggle" />
-              <span class="slider-round"></span>
-            </label>
-          </div>
-
-          <div class="pref-row">
-            <span>Push Notifications</span>
-            <label class="toggle-switch">
-              <input type="checkbox" id="pushToggle" />
-              <span class="slider-round"></span>
-            </label>
-          </div>
-        </section>
-      </div>
-    </main>
-  </div>
+        <div class="pref-row">
+          <span>Push Notifications</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="pushToggle" />
+            <span class="slider-round"></span>
+          </label>
+        </div>
+      </section>
+    </div>
+  </main>
 
   <!-- floating emojis script -->
   <script>
@@ -249,6 +245,7 @@
   <!-- Reminders + preferences logic -->
   <script>
     const API_BASE = 'http://localhost:9098';
+    const USER_ID = 1; // replace with logged‑in user id when you wire auth
 
     function handleLogout() {
       window.location.href = 'login.html';
@@ -262,26 +259,69 @@
       }
     }
 
+    // Load upcoming reminders based on booked events
     async function loadReminders() {
       const container = document.getElementById('upcomingReminders');
-      container.innerHTML = 'Loading reminders...';
+      container.innerHTML = '<p class="empty-text">Loading reminders...</p>';
 
       try {
-        const res = await fetch(API_BASE + '/api/reminders/upcoming?userId=1');
+        // 1) fetch bookings for this user (or all, then filter by userId)
+        let url = API_BASE + '/api/bookings/user/' + USER_ID;
+        let res = await fetch(url);
+
         if (!res.ok) {
-          container.innerHTML = '<p class="empty-text">Failed to load reminders.</p>';
+          url = API_BASE + '/api/bookings';
+          res = await fetch(url);
+        }
+        if (!res.ok) {
+          container.innerHTML = '<p class="empty-text">Failed to load bookings.</p>';
           return;
         }
-        const reminders = await res.json();
 
-        if (!Array.isArray(reminders) || reminders.length === 0) {
+        let bookings = await res.json();
+        if (url.endsWith('/bookings')) {
+          bookings = bookings.filter(b => b.userId === USER_ID);
+        }
+
+        // 2) filter future events
+        const now = new Date();
+        const upcoming = bookings
+          .filter(b => {
+            if (!b.eventDateTime) return false;
+            const dt = new Date(b.eventDateTime);
+            return dt >= now;
+          })
+          .sort((a, b) => new Date(a.eventDateTime) - new Date(b.eventDateTime)); // earliest first [web:78][web:84]
+
+        if (upcoming.length === 0) {
           container.innerHTML =
-            '<p class="empty-text">No upcoming reminders yet. Book events to see reminders here.</p>';
+            '<p class="empty-text">No upcoming events. Book events to see reminders here.</p>';
           return;
         }
 
+        // 3) optional: load events list for titles and venues
+        const eventsMap = {};
+        try {
+          const evRes = await fetch(API_BASE + '/api/events');
+          if (evRes.ok) {
+            const events = await evRes.json();
+            events.forEach(e => { eventsMap[e.id] = e; });
+          }
+        } catch (e) {
+          console.error('Error loading events for reminders:', e);
+        }
+
+        // 4) render reminder cards
         container.innerHTML = '';
-        reminders.forEach(r => {
+        upcoming.forEach(b => {
+          const ev = eventsMap[b.eventId] || null;
+          const title = ev ? ev.title : ('Event #' + b.eventId);
+          const dt = b.eventDateTime ? new Date(b.eventDateTime) : null;
+          const dateStr = dt ? dt.toLocaleDateString() : 'Date not set';
+          const timeStr = dt
+            ? dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : '';
+
           const card = document.createElement('div');
           card.className = 'reminder-card';
 
@@ -292,20 +332,18 @@
           const textBox = document.createElement('div');
           textBox.className = 'reminder-text';
 
-          const title = document.createElement('p');
-          title.className = 'reminder-title';
-          title.textContent = r.eventTitle || ('Event #' + r.eventId);
+          const titleEl = document.createElement('p');
+          titleEl.className = 'reminder-title';
+          titleEl.textContent = title;
 
-          const when = document.createElement('p');
-          when.className = 'reminder-time';
-          when.textContent = r.offsetLabel || 'Reminder scheduled';
+          const whenEl = document.createElement('p');
+          whenEl.className = 'reminder-time';
+          whenEl.textContent = dateStr + (timeStr ? ' • ' + timeStr : '');
 
-          textBox.appendChild(title);
-          textBox.appendChild(when);
-
+          textBox.appendChild(titleEl);
+          textBox.appendChild(whenEl);
           card.appendChild(iconBox);
           card.appendChild(textBox);
-
           container.appendChild(card);
         });
       } catch (err) {
@@ -320,7 +358,7 @@
       const pushToggle = document.getElementById('pushToggle');
 
       try {
-        const res = await fetch(API_BASE + '/api/reminders/preferences?userId=1');
+        const res = await fetch(API_BASE + '/api/reminders/preferences?userId=' + USER_ID);
         if (res.ok) {
           const prefs = await res.json();
           emailToggle.checked = !!prefs.emailEnabled;
@@ -339,7 +377,7 @@
       const pushToggle = document.getElementById('pushToggle');
 
       const body = {
-        userId: 1,
+        userId: USER_ID,
         emailEnabled: emailToggle.checked,
         pushEnabled:  pushToggle.checked
       };

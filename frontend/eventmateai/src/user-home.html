@@ -190,10 +190,19 @@
           <span>Events</span>
         </button>
 
-
         <button class="nav-btn" id="nav-mybookings" onclick="openPage('my-bookings')">
           <span class="icon">📂</span>
           <span>My Bookings</span>
+        </button>
+
+        <!-- Event Reminders nav item (from Remote) -->
+        <button class="nav-btn" id="nav-reminders" onclick="openPage('reminders')">
+          <span class="icon">⏰</span>
+          <span>Event Reminders</span>
+        </button>
+        <button class="nav-btn" id="nav-feedback" onclick="openPage('feedback')">
+          <span class="icon">💬</span>
+          <span>Submit Feedback</span>
         </button>
       </aside>
 
@@ -226,6 +235,8 @@
   </div>
 
   <script>
+    const API_BASE = 'http://localhost:9098';
+
     function handleLogout() {
       window.location.href = 'login.html';
     }
@@ -236,6 +247,7 @@
       if (page === 'events') document.getElementById('nav-events').classList.add('active');
 
       if (page === 'my-bookings') document.getElementById('nav-mybookings').classList.add('active');
+      if (page === 'reminders') document.getElementById('nav-reminders').classList.add('active');
     }
 
     async function loadHtmlIntoMain(url, titleText) {
@@ -310,12 +322,13 @@
         loadHtmlIntoMain('booking.html', 'Booking');
       } else if (page === 'my-bookings') {
         renderMyBookingsPage();
+      } else if (page === 'reminders') {
+        // use the real reminders page that already loads upcoming events from DB
+        loadHtmlIntoMain('event-reminders.html', 'Event Reminders');
       }
     }
 
     // --- EVENTS LOGIC ---
-    const API_BASE = 'http://localhost:9098';
-
     async function renderEventsPage() {
       const main = document.getElementById('mainContent');
       main.innerHTML = `
@@ -479,7 +492,6 @@
                 </div>
              </div>
           </div>
-
         </div>
       `;
 
@@ -605,8 +617,7 @@
       });
     }
 
-
-    // Slider logic
+    // HERO SLIDER
     let heroInterval = null;
 
     function initHeroSlider() {
