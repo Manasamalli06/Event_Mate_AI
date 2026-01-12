@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Event Reminders - Event Mate AI</title>
@@ -10,6 +11,7 @@
       margin: 0 auto;
       padding: 24px 20px 90px;
     }
+
     .reminders-title {
       font-size: 22px;
       color: #04345c;
@@ -17,6 +19,7 @@
       text-align: center;
       font-weight: 700;
     }
+
     .reminders-subtitle {
       font-size: 13px;
       color: #5b7285;
@@ -29,9 +32,10 @@
       background: #ffffff;
       border-radius: 16px;
       padding: 16px 18px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
       margin-bottom: 16px;
     }
+
     .section-heading {
       font-size: 18px;
       color: #04345c;
@@ -49,6 +53,7 @@
       background: #e9f7ff;
       margin-bottom: 8px;
     }
+
     .reminder-icon-box {
       width: 40px;
       height: 40px;
@@ -61,15 +66,18 @@
       font-size: 20px;
       flex-shrink: 0;
     }
+
     .reminder-text {
       flex: 1;
     }
+
     .reminder-title {
       font-size: 15px;
       color: #04345c;
       margin: 0 0 2px;
       font-weight: 600;
     }
+
     .reminder-time {
       font-size: 12px;
       color: #00a8ff;
@@ -85,16 +93,19 @@
       font-size: 14px;
       color: #04345c;
     }
+
     .toggle-switch {
       position: relative;
       width: 46px;
       height: 26px;
     }
+
     .toggle-switch input {
       opacity: 0;
       width: 0;
       height: 0;
     }
+
     .slider-round {
       position: absolute;
       cursor: pointer;
@@ -103,6 +114,7 @@
       transition: 0.2s;
       border-radius: 999px;
     }
+
     .slider-round:before {
       content: "";
       position: absolute;
@@ -113,12 +125,14 @@
       background-color: #ffffff;
       transition: 0.2s;
       border-radius: 50%;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     }
-    .toggle-switch input:checked + .slider-round {
+
+    .toggle-switch input:checked+.slider-round {
       background-color: #00a8ff;
     }
-    .toggle-switch input:checked + .slider-round:before {
+
+    .toggle-switch input:checked+.slider-round:before {
       transform: translateX(20px);
     }
 
@@ -136,27 +150,33 @@
       overflow: hidden;
       z-index: 0;
     }
+
     .app-shell {
       position: relative;
       z-index: 1;
     }
+
     .emoji-bubble {
       position: absolute;
       font-size: 24px;
       opacity: 0;
       animation: floatUp linear infinite;
     }
+
     @keyframes floatUp {
       0% {
         transform: translateY(20vh) scale(0.8);
         opacity: 0;
       }
+
       10% {
         opacity: 1;
       }
+
       90% {
         opacity: 1;
       }
+
       100% {
         transform: translateY(-25vh) scale(1.1);
         opacity: 0;
@@ -164,6 +184,7 @@
     }
   </style>
 </head>
+
 <body>
   <!-- floating emojis layer -->
   <div class="floating-emoji-layer" id="floatingEmojiLayer"></div>
@@ -215,7 +236,7 @@
       const emojiLayer = document.getElementById('floatingEmojiLayer');
       if (!emojiLayer) return;
 
-      const EMOJIS = ['🎉','🎊','🎈','🥳','🎂','🎟️','🎫','✨','🍾','🎵','🎤','🎧','📅'];
+      const EMOJIS = ['🎉', '🎊', '🎈', '🥳', '🎂', '🎟️', '🎫', '✨', '🍾', '🎵', '🎤', '🎧', '📅'];
 
       function createEmojiBubble() {
         const span = document.createElement('span');
@@ -223,13 +244,13 @@
         span.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
 
         const startLeft = Math.random() * 100;
-        const startTop  = Math.random() * 100;
+        const startTop = Math.random() * 100;
         const dx = (Math.random() * 40 - 20);
         const dy = (Math.random() * 40 - 20);
         const duration = 6 + Math.random() * 6;
 
         span.style.left = startLeft + 'vw';
-        span.style.top  = startTop + 'vh';
+        span.style.top = startTop + 'vh';
         span.style.setProperty('--dx', dx + 'vw');
         span.style.setProperty('--dy', dy + 'vh');
         span.style.animationDuration = duration + 's';
@@ -259,69 +280,31 @@
       }
     }
 
-    // Load upcoming reminders based on booked events
+    // Load upcoming reminders from the database
     async function loadReminders() {
       const container = document.getElementById('upcomingReminders');
       container.innerHTML = '<p class="empty-text">Loading reminders...</p>';
 
       try {
-        // 1) fetch bookings for this user (or all, then filter by userId)
-        let url = API_BASE + '/api/bookings/user/' + USER_ID;
-        let res = await fetch(url);
+        const url = API_BASE + '/api/reminders/upcoming?userId=' + USER_ID;
+        const res = await fetch(url);
 
         if (!res.ok) {
-          url = API_BASE + '/api/bookings';
-          res = await fetch(url);
-        }
-        if (!res.ok) {
-          container.innerHTML = '<p class="empty-text">Failed to load bookings.</p>';
+          container.innerHTML = '<p class="empty-text">Failed to load reminders.</p>';
           return;
         }
 
-        let bookings = await res.json();
-        if (url.endsWith('/bookings')) {
-          bookings = bookings.filter(b => b.userId === USER_ID);
-        }
+        const reminders = await res.json();
 
-        // 2) filter future events
-        const now = new Date();
-        const upcoming = bookings
-          .filter(b => {
-            if (!b.eventDateTime) return false;
-            const dt = new Date(b.eventDateTime);
-            return dt >= now;
-          })
-          .sort((a, b) => new Date(a.eventDateTime) - new Date(b.eventDateTime)); // earliest first [web:78][web:84]
-
-        if (upcoming.length === 0) {
+        if (reminders.length === 0) {
           container.innerHTML =
-            '<p class="empty-text">No upcoming events. Book events to see reminders here.</p>';
+            '<p class="empty-text">No upcoming reminders. Book events to see reminders here.</p>';
           return;
         }
 
-        // 3) optional: load events list for titles and venues
-        const eventsMap = {};
-        try {
-          const evRes = await fetch(API_BASE + '/api/events');
-          if (evRes.ok) {
-            const events = await evRes.json();
-            events.forEach(e => { eventsMap[e.id] = e; });
-          }
-        } catch (e) {
-          console.error('Error loading events for reminders:', e);
-        }
-
-        // 4) render reminder cards
+        // Render reminder cards
         container.innerHTML = '';
-        upcoming.forEach(b => {
-          const ev = eventsMap[b.eventId] || null;
-          const title = ev ? ev.title : ('Event #' + b.eventId);
-          const dt = b.eventDateTime ? new Date(b.eventDateTime) : null;
-          const dateStr = dt ? dt.toLocaleDateString() : 'Date not set';
-          const timeStr = dt
-            ? dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            : '';
-
+        reminders.forEach(r => {
           const card = document.createElement('div');
           card.className = 'reminder-card';
 
@@ -334,11 +317,11 @@
 
           const titleEl = document.createElement('p');
           titleEl.className = 'reminder-title';
-          titleEl.textContent = title;
+          titleEl.textContent = r.eventTitle;
 
           const whenEl = document.createElement('p');
           whenEl.className = 'reminder-time';
-          whenEl.textContent = dateStr + (timeStr ? ' • ' + timeStr : '');
+          whenEl.textContent = r.offsetLabel;
 
           textBox.appendChild(titleEl);
           textBox.appendChild(whenEl);
@@ -362,7 +345,7 @@
         if (res.ok) {
           const prefs = await res.json();
           emailToggle.checked = !!prefs.emailEnabled;
-          pushToggle.checked  = !!prefs.pushEnabled;
+          pushToggle.checked = !!prefs.pushEnabled;
         }
       } catch (err) {
         console.error('Error loading preferences:', err);
@@ -379,7 +362,7 @@
       const body = {
         userId: USER_ID,
         emailEnabled: emailToggle.checked,
-        pushEnabled:  pushToggle.checked
+        pushEnabled: pushToggle.checked
       };
 
       try {
@@ -397,4 +380,5 @@
     loadPreferences();
   </script>
 </body>
+
 </html>

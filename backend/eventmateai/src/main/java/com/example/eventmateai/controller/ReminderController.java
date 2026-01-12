@@ -12,55 +12,78 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.eventmateai.model.Booking;
 import com.example.eventmateai.model.Event;
 import com.example.eventmateai.model.EventReminder;
 import com.example.eventmateai.model.ReminderPreference;
+import com.example.eventmateai.repository.BookingRepository;
 import com.example.eventmateai.repository.EventReminderRepository;
 import com.example.eventmateai.repository.EventRepository;
 import com.example.eventmateai.repository.ReminderPreferenceRepository;
 
 @RestController
 @RequestMapping("/api/reminders")
-@CrossOrigin(origins = "http://localhost:5500") // adjust if needed
+@CrossOrigin(origins = "*") // Allow all origins for dev compatibility
 public class ReminderController {
 
     private final EventReminderRepository reminderRepo;
     private final ReminderPreferenceRepository prefRepo;
     private final EventRepository eventRepository;
+    private final BookingRepository bookingRepository;
 
     public ReminderController(EventReminderRepository reminderRepo,
-                              ReminderPreferenceRepository prefRepo,
-                              EventRepository eventRepository) {
+            ReminderPreferenceRepository prefRepo,
+            EventRepository eventRepository,
+            BookingRepository bookingRepository) {
         this.reminderRepo = reminderRepo;
         this.prefRepo = prefRepo;
         this.eventRepository = eventRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     // For event-reminders.html upcoming list
+    // For event-reminders.html upcoming list
+    // Modified to return ALL upcoming booked events, not just scheduled
+    // notifications
     @GetMapping("/upcoming")
     public List<UpcomingReminderDto> getUpcoming(@RequestParam Long userId) {
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime end = now.plusDays(7);
 
-        System.out.println("getUpcoming called with userId = " + userId);
-        System.out.println("Window: " + now + " -> " + end);
+        // 1. Get all bookings for user
+        List<Booking> bookings = bookingRepository.findByUserId(userId);
 
-        List<EventReminder> reminders =
-                reminderRepo.findByUserIdAndRemindAtBetweenOrderByRemindAtAsc(userId, now, end);
+        // 2. Filter for future events and map
+        return bookings.stream()
+                .filter(b -> b.getStatus() == null || "CONFIRMED".equalsIgnoreCase(b.getStatus()))
+                .map(b -> {
+                    // Check event time
+                    Optional<Event> evOpt = eventRepository.findById(b.getEventId());
+                    if (evOpt.isEmpty())
+                        return null;
 
-        System.out.println("Found reminders: " + reminders.size());
+                    Event ev = evOpt.get();
 
-        return reminders.stream()
-                .map(r -> {
-                    Optional<Event> evOpt = eventRepository.findById(r.getEventId());
-                    String title = evOpt.map(Event::getTitle)
-                                        .orElse("Event #" + r.getEventId());
                     UpcomingReminderDto dto = new UpcomingReminderDto();
-                    dto.setEventId(r.getEventId());
-                    dto.setEventTitle(title);
-                    dto.setOffsetLabel(r.getOffsetLabel());
+                    dto.setEventId(ev.getId());
+                    dto.setEventTitle(ev.getTitle());
+
+                    if (ev.getDateTime() == null) {
+                        dto.setOffsetLabel("Date To Be Announced");
+                    } else {
+                        if (ev.getDateTime().isBefore(now))
+                            return null; // Skip past events
+
+                        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter
+                                .ofPattern("MMM dd, yyyy h:mm a");
+                        dto.setOffsetLabel(ev.getDateTime().format(formatter));
+                    }
+
                     return dto;
                 })
+                .filter(dto -> dto != null)
+                .sorted((d1, d2) -> d1.getOffsetLabel().compareTo(d2.getOffsetLabel())) // simple string sort
+                                                                                        // approximation or improvements
+                                                                                        // needed
                 .toList();
     }
 
@@ -79,8 +102,7 @@ public class ReminderController {
 
     @PostMapping("/preferences")
     public ReminderPreference savePrefs(@RequestBody ReminderPreference pref) {
-        ReminderPreference existing =
-                prefRepo.findByUserId(pref.getUserId()).orElse(new ReminderPreference());
+        ReminderPreference existing = prefRepo.findByUserId(pref.getUserId()).orElse(new ReminderPreference());
         existing.setUserId(pref.getUserId());
         existing.setEmailEnabled(pref.isEmailEnabled());
         existing.setPushEnabled(pref.isPushEnabled());
