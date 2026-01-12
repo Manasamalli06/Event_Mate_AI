@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <title>Admin Home - Event Mate AI</title>
@@ -149,6 +148,189 @@
       object-fit: contain;
       background: #e6dbe7;
     }
+
+    /* ===== ADDED: Admin Review Card styles ===== */
+    .admin-review-card {
+      max-width: 420px;
+      margin: 0 auto;
+      padding: 24px 20px 32px;
+      border-radius: 18px;
+      background: #f9fafb;
+      box-shadow: 0 16px 35px rgba(15, 23, 42, 0.08);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .admin-review-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .admin-review-header h2 {
+      margin: 0 auto;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .back-btn {
+      border: none;
+      background: transparent;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .admin-user-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .admin-user-info img {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .admin-user-text h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .admin-user-text p {
+      margin: 2px 0;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .admin-event-name {
+      font-size: 12px;
+      color: #111827;
+    }
+
+    .admin-rating-section h4,
+    .admin-review-text h4,
+    .admin-moderation h4 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .admin-rating-section {
+      margin-bottom: 18px;
+    }
+
+    .admin-rating-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .admin-rating-buttons button {
+      border-radius: 18px;
+      padding: 6px 12px;
+      border: 1px solid #d1d5db;
+      background-color: #fff;
+      font-size: 12px;
+      cursor: default;
+    }
+
+    .admin-rating-buttons button.active {
+      background-color: #00a8ff;
+      color: #fff;
+      border-color: #00a8ff;
+    }
+
+    .admin-review-text {
+      margin-bottom: 24px;
+    }
+
+    .admin-review-box {
+      min-height: 90px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background-color: #e5f3fb;
+      font-size: 13px;
+      color: #374151;
+      white-space: pre-wrap;
+    }
+
+    .admin-moderation {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 16px;
+    }
+
+    .admin-moderation-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .admin-label {
+      color: #6b7280;
+    }
+
+    .admin-status-badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    .admin-status-badge.approved {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+
+    .admin-status-badge.rejected {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+
+    .admin-submitted-by {
+      margin: 6px 0 14px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .admin-submitted-by span {
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .admin-action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .approve-btn,
+    .reject-btn {
+      flex: 1;
+      border-radius: 999px;
+      padding: 8px 0;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .approve-btn {
+      background-color: #22c55e;
+      color: #fff;
+    }
+
+    .reject-btn {
+      background-color: #f97373;
+      color: #fff;
+    }
+    /* ===== END ADDED STYLES ===== */
   </style>
 
   <script>
@@ -214,6 +396,13 @@
           <span class="icon">✅</span>
           <span>Verify Ticket</span>
         </button>
+
+        <!-- ADDED: menu for reviews -->
+        <button class="nav-btn" id="nav-reviews" onclick="openPage('reviews')">
+          <span class="icon">⭐</span>
+          <span>User Reviews</span>
+        </button>
+        <!-- END ADDED -->
       </aside>
 
       <!-- CENTER CONTENT -->
@@ -290,6 +479,7 @@
       if (page === 'edit') document.getElementById('nav-edit').classList.add('active');
       if (page === 'bookings') document.getElementById('nav-bookings').classList.add('active');
       if (page === 'verify') document.getElementById('nav-verify').classList.add('active');
+      if (page === 'reviews') document.getElementById('nav-reviews').classList.add('active'); // ADDED
     }
 
     async function loadHtmlIntoMain(url, titleText) {
@@ -371,6 +561,8 @@
           });
       } else if (page === 'verify') {
         renderVerifyPage();
+      } else if (page === 'reviews') { // ADDED
+        renderReviewPage();
       }
     }
 
@@ -388,17 +580,17 @@
                </div>
                
                <div id="verifyResult" style="margin-top:20px; display:none;">
-                   <div id="verifyCard" style="padding:20px; border-radius:12px; border:1px solid #eee; background:#f9f9f9;">
-                      <h3 id="vEventTitle" style="margin-top:0; color:#04345c;">Event Title</h3>
-                      <div style="margin-bottom:8px;"><strong>Booking ID:</strong> <span id="vBid"></span></div>
-                      <div style="margin-bottom:8px;"><strong>User ID:</strong> <span id="vUid"></span></div>
-                      <div style="margin-bottom:8px;"><strong>Status:</strong> <span id="vStatus" style="font-weight:bold;"></span></div>
-                      <div style="margin-bottom:8px;"><strong>Seats:</strong> <span id="vSeats"></span></div>
-                      
-                      <div id="vActions" style="margin-top:20px;">
-                         <button id="btnAdmit" style="width:100%; padding:12px; background:#4caf50; color:white; border:none; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer;">ADMIT (CHECK-IN)</button>
-                      </div>
-                   </div>
+                  <div id="verifyCard" style="padding:20px; border-radius:12px; border:1px solid #eee; background:#f9f9f9;">
+                     <h3 id="vEventTitle" style="margin-top:0; color:#04345c;">Event Title</h3>
+                     <div style="margin-bottom:8px;"><strong>Booking ID:</strong> <span id="vBid"></span></div>
+                     <div style="margin-bottom:8px;"><strong>User ID:</strong> <span id="vUid"></span></div>
+                     <div style="margin-bottom:8px;"><strong>Status:</strong> <span id="vStatus" style="font-weight:bold;"></span></div>
+                     <div style="margin-bottom:8px;"><strong>Seats:</strong> <span id="vSeats"></span></div>
+                     
+                     <div id="vActions" style="margin-top:20px;">
+                        <button id="btnAdmit" style="width:100%; padding:12px; background:#4caf50; color:white; border:none; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer;">ADMIT (CHECK-IN)</button>
+                     </div>
+                  </div>
                </div>
             </div>
          </div>
@@ -415,20 +607,6 @@
       resDiv.style.display = 'none';
 
       try {
-        // We don't have a direct "get booking by id" for admin exposed in Controller easily?
-        // Controller has: GET /api/bookings (all), GET /api/bookings/user/{id}
-        // But usually Repositories have findById. 
-        // Wait, PUT /api/bookings/{id}/status exists.
-        // And usually there is a get by id. Let's check BookingController again.
-        // It DOES NOT have a specific getBookingById endpoint in the snippet I saw earlier!
-        // It has getAllBookings, create, getBookingsForUser, updateStatus, delete.
-
-        // Workaround: Get ALL and filter (inefficient but works for demo). 
-        // OR Add endpoint. For now, I will use getAllBookings and find one. 
-        // Wait, I am an AI, I can update the backend too if needed, but the user said "make qr scannable... and give access to admin for confirmation".
-        // I should verify if I can easily add the endpoint or just use the workaround. 
-        // Given the context, get all is fine for a demo.
-
         const res = await fetch(API_BASE + '/api/bookings');
         if (!res.ok) throw new Error('Failed to fetch bookings');
         const all = await res.json();
@@ -439,7 +617,6 @@
           return;
         }
 
-        // Need event details too for title
         const evRes = await fetch(API_BASE + '/api/events');
         const events = await evRes.json();
         const event = events.find(e => e.id == booking.eventId);
@@ -485,7 +662,7 @@
         });
         if (res.ok) {
           alert('Success! User checked in.');
-          checkTicket(); // refresh
+          checkTicket();
         } else {
           alert('Failed to update status');
         }
@@ -607,13 +784,11 @@
     async function wireEditEventPage() {
       await loadEventsForEdit();
 
-      // "Cancel" button in the edit panel
       const btnCancelEdit = document.getElementById('btnCancelEdit');
       if (btnCancelEdit) {
         btnCancelEdit.addEventListener('click', cancelEdit);
       }
 
-      // "Save Changes" form submit
       const editForm = document.getElementById('editEventForm');
       if (editForm) {
         editForm.addEventListener('submit', async (e) => {
@@ -686,7 +861,6 @@
         tbody.innerHTML = '';
         events.forEach(e => {
           const tr = document.createElement('tr');
-          // Format date slightly better
           const dt = e.dateTime ? e.dateTime.replace("T", " ") : "Date not set";
 
           tr.innerHTML = `
@@ -706,7 +880,6 @@
           tbody.appendChild(tr);
         });
 
-        // Wire up per-row buttons
         document.querySelectorAll('.btn-edit').forEach(btn => {
           btn.addEventListener('click', () => {
             const id = parseInt(btn.getAttribute('data-id'), 10);
@@ -755,7 +928,6 @@
       document.getElementById('editCurrency').value = eventData.currency || '';
 
       document.getElementById('editPanel').style.display = 'block';
-      // scroll to edit panel
       const panel = document.getElementById('editPanel');
       panel.scrollIntoView({ behavior: 'smooth' });
     }
@@ -922,7 +1094,156 @@
       } catch (e) { console.error(e); }
     }
 
+    /* ===== ADDED: Admin Review Page JS ===== */
+    function renderReviewPage() {
+      const main = document.getElementById('mainContent');
+      main.innerHTML = `
+        <div class="content-card">
+          <section class="admin-review-card">
+            <header class="admin-review-header">
+              <button class="back-btn" onclick="goBackToEventList()">←</button>
+              <h2>Rate Event</h2>
+            </header>
+
+            <div class="admin-user-info">
+              <img id="ar-avatar" src="images/default-avatar.png" alt="User" />
+              <div class="admin-user-text">
+                <h3 id="ar-user-name">User Name</h3>
+                <p id="ar-attended-date">Attended: yyyy-mm-dd</p>
+                <p id="ar-event-name" class="admin-event-name">Event name here</p>
+              </div>
+            </div>
+
+            <section class="admin-rating-section">
+              <h4>Your Rating</h4>
+              <div class="admin-rating-buttons">
+                <button type="button" id="ar-star-1" disabled>1 Star</button>
+                <button type="button" id="ar-star-2" disabled>2 Stars</button>
+                <button type="button" id="ar-star-3" disabled>3 Stars</button>
+                <button type="button" id="ar-star-4" disabled>4 Stars</button>
+                <button type="button" id="ar-star-5" disabled>5 Stars</button>
+              </div>
+            </section>
+
+            <section class="admin-review-text">
+              <h4>Your Review</h4>
+              <div class="admin-review-box" id="ar-review-text">
+                Loading review...
+              </div>
+            </section>
+
+            <section class="admin-moderation">
+              <h4>Admin Moderation</h4>
+              <div class="admin-moderation-row">
+                <span class="admin-label">Review Status</span>
+                <span id="ar-status" class="admin-status-badge">Pending</span>
+              </div>
+              <p class="admin-submitted-by">
+                Review submitted by <span id="ar-submitted-by">User Name</span>
+              </p>
+              <div class="admin-action-buttons">
+                <button type="button" class="approve-btn" onclick="updateReviewStatus('APPROVED')">
+                  Approve
+                </button>
+                <button type="button" class="reject-btn" onclick="updateReviewStatus('REJECTED')">
+                  Reject
+                </button>
+              </div>
+            </section>
+          </section>
+        </div>
+      `;
+      loadFeedbackForAdmin();
+    }
+
+    function goBackToEventList() {
+      // adjust if you have a dedicated reviews list page
+      openPage('bookings');
+    }
+
+    function getFeedbackIdFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('feedbackId');
+    }
+
+    async function loadFeedbackForAdmin() {
+      const feedbackId = getFeedbackIdFromUrl();
+      if (!feedbackId) {
+        document.getElementById('ar-review-text').textContent =
+          'No feedbackId found in URL. Open this page as admin-home.html?feedbackId=ID';
+        return;
+      }
+
+      try {
+        const res = await fetch(API_BASE + '/api/admin/feedback/' + feedbackId);
+        if (!res.ok) {
+          document.getElementById('ar-review-text').textContent =
+            'Failed to load feedback details.';
+          return;
+        }
+        const data = await res.json();
+
+        document.getElementById('ar-user-name').textContent = data.userName || 'User';
+        document.getElementById('ar-submitted-by').textContent = data.userName || 'User';
+        document.getElementById('ar-event-name').textContent = data.eventName || ('Event #' + data.eventId);
+        if (data.attendedDate) {
+          document.getElementById('ar-attended-date').textContent = 'Attended: ' + data.attendedDate;
+        }
+        if (data.avatarUrl) {
+          document.getElementById('ar-avatar').src = data.avatarUrl;
+        }
+
+        for (let i = 1; i <= 5; i++) {
+          const btn = document.getElementById('ar-star-' + i);
+          if (i === data.rating) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+
+        document.getElementById('ar-review-text').textContent =
+          data.comments || 'No review text provided.';
+
+        setAdminStatusBadge(data.status || 'PENDING');
+      } catch (e) {
+        console.error(e);
+        document.getElementById('ar-review-text').textContent =
+          'Error loading feedback.';
+      }
+    }
+
+    function setAdminStatusBadge(status) {
+      const el = document.getElementById('ar-status');
+      if (!el) return;
+      el.textContent = status.charAt(0) + status.slice(1).toLowerCase();
+      el.classList.remove('approved', 'rejected');
+      if (status === 'APPROVED') el.classList.add('approved');
+      if (status === 'REJECTED') el.classList.add('rejected');
+    }
+
+    async function updateReviewStatus(newStatus) {
+      const feedbackId = getFeedbackIdFromUrl();
+      if (!feedbackId) {
+        alert('No feedbackId in URL.');
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          API_BASE + '/api/admin/feedback/' + feedbackId + '/status?status=' + newStatus,
+          { method: 'PUT' }
+        );
+        if (!res.ok) {
+          alert('Failed to update review status');
+          return;
+        }
+        const updated = await res.json();
+        setAdminStatusBadge(updated.status || newStatus);
+        alert('Status updated to ' + (updated.status || newStatus));
+      } catch (e) {
+        console.error(e);
+        alert('Error updating status');
+      }
+    }
+    /* ===== END ADDED REVIEW JS ===== */
   </script>
 </body>
-
 </html>
