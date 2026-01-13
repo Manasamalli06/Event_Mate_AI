@@ -1,346 +1,583 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>User Profile - Event Mate AI</title>
   <link rel="stylesheet" href="dashboard.css" />
   <style>
-    .profile-wrapper {
-      max-width: 700px;
+    /* Profile specific styles */
+    .profile-layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 24px;
+      max-width: 1100px;
       margin: 0 auto;
-      padding: 24px 20px;
     }
 
-    .profile-title {
-      font-size: 24px;
-      color: #04345c;
-      margin-bottom: 6px;
-    }
-
-    .profile-subtitle {
-      font-size: 14px;
-      color: #5b7285;
-      margin-bottom: 18px;
+    @media (max-width: 768px) {
+      .profile-layout {
+        grid-template-columns: 1fr;
+      }
     }
 
     .profile-card {
       background: #ffffff;
-      border-radius: 16px;
-      padding: 18px 20px;
-      box-shadow: 0 8px 22px rgba(4,52,92,0.16);
-      box-sizing: border-box;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(4, 52, 92, 0.08);
+      padding: 24px;
+      text-align: center;
+      height: fit-content;
     }
 
-    .profile-section-title {
-      font-size: 16px;
+    .profile-avatar-container {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 16px;
+    }
+
+    .profile-avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #e1f5fe;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-name {
+      font-size: 22px;
+      font-weight: 700;
       color: #04345c;
-      margin: 0 0 8px;
-      font-weight: 600;
+      margin: 0 0 4px;
     }
 
-    .profile-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 8px;
-      font-size: 13px;
-    }
-
-    .profile-label {
-      color: #5b7285;
-    }
-
-    .profile-value {
-      color: #04345c;
-      font-weight: 600;
-      text-align: right;
-    }
-
-    .profile-actions {
-      margin-top: 16px;
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-
-    .btn-outline,
-    .btn-primary {
-      border-radius: 999px;
-      padding: 8px 20px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-    }
-
-    .btn-outline {
-      border: 1px solid #00a8ff;
-      background: transparent;
+    .profile-role {
+      font-size: 14px;
       color: #00a8ff;
-    }
-
-    .btn-primary {
-      background: #00a8ff;
-      color: #ffffff;
-    }
-
-    .btn-primary:hover {
-      background: #008ad1;
-    }
-
-    /* Avatar picker styles */
-    .avatar-section {
-      margin-top: 12px;
-    }
-
-    .avatar-modes {
-      display: flex;
-      gap: 8px;
-      margin: 8px 0 10px;
-      flex-wrap: wrap;
-    }
-
-    .avatar-mode-btn {
-      border-radius: 999px;
-      padding: 6px 14px;
-      font-size: 12px;
-      border: 1px solid #c6d4e5;
-      background: #f5f8fc;
-      color: #04345c;
-      cursor: pointer;
-    }
-
-    .avatar-mode-btn.active {
-      border-color: #00a8ff;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+      display: inline-block;
       background: #e6f6ff;
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+
+    .profile-location {
+      font-size: 14px;
+      color: #5b7285;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .profile-stats {
+      display: flex;
+      justify-content: space-around;
+      padding-top: 20px;
+      border-top: 1px solid #f0f4f8;
+      margin-top: 20px;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #04345c;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #8fa6b8;
+    }
+
+    .content-card {
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(4, 52, 92, 0.08);
+      padding: 30px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 24px;
+      border-bottom: 1px solid #eef2f6;
+      margin-bottom: 24px;
+    }
+
+    .tab-btn {
+      padding: 12px 4px;
+      background: none;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      color: #8fa6b8;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .tab-btn.active {
       color: #00a8ff;
     }
 
-    .avatar-upload {
-      margin-bottom: 10px;
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: #00a8ff;
+      border-radius: 2px 2px 0 0;
+    }
+
+    .tab-content {
       display: none;
     }
 
-    .avatar-upload input[type="file"] {
-      font-size: 12px;
+    .tab-content.active {
+      display: block;
     }
 
-    .avatar-list {
+    .info-group {
+      margin-bottom: 24px;
+    }
+
+    .info-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #8fa6b8;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .info-value {
+      font-size: 15px;
+      color: #04345c;
+      line-height: 1.5;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid #dce5ef;
+      font-family: inherit;
+      font-size: 14px;
+      color: #04345c;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #00a8ff;
+    }
+
+    .avatar-options {
       display: flex;
       gap: 12px;
-      margin-top: 8px;
+      margin-top: 10px;
       flex-wrap: wrap;
     }
 
-    .avatar-list label {
-      position: relative;
+    .avatar-option-label {
       cursor: pointer;
-    }
-
-    .avatar-list input[type="radio"] {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .avatar-option {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
       border: 2px solid transparent;
-      object-fit: cover;
-      transition: border-color 0.2s, transform 0.2s;
-    }
-
-    .avatar-list input[type="radio"]:checked + .avatar-option {
-      border-color: #00a8ff;
-      transform: scale(1.05);
-    }
-
-    .avatar-preview {
-      margin-top: 8px;
-      font-size: 12px;
-      color: #5b7285;
-    }
-
-    .avatar-preview-img {
-      width: 48px;
-      height: 48px;
       border-radius: 50%;
-      object-fit: cover;
-      border: 1px solid #c6d4e5;
-      margin-left: 6px;
-      vertical-align: middle;
+      padding: 2px;
+      transition: border-color 0.2s;
+    }
+
+    .avatar-option-label.selected {
+      border-color: #00a8ff;
+    }
+
+    .avatar-option-img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: block;
+    }
+
+    .save-btn {
+      background: #00a8ff;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .save-btn:hover {
+      background: #008ece;
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      display: none;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e1f5fe;
+      border-top-color: #00a8ff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
     }
   </style>
 </head>
+
 <body>
-  <!-- floating emojis layer -->
+  <!-- emoji bg -->
   <div class="floating-emoji-layer" id="floatingEmojiLayer"></div>
 
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo-circle">EM</div>
+        <div class="brand-text">EVENTMATE<span class="brand-ai">AI</span></div>
+      </div>
+      <div class="app-nav">
+        <div class="back-box" onclick="handleBackDashboard()">
+          <span>&larr;</span> Dashboard
+        </div>
+        <button class="logout-btn" onclick="handleLogout()">
+          <div class="logout-icon-circle">&times;</div>
+          Logout
+        </button>
+      </div>
+    </header>
+
     <main class="app-main">
+      <div class="profile-layout">
 
-      <div class="profile-wrapper">
-        <h1 class="profile-title">My Profile</h1>
-        <p class="profile-subtitle">
-          View your account details and manage your profile.
-        </p>
-
+        <!-- Left Column: Summary Card -->
         <div class="profile-card">
-          <h2 class="profile-section-title">Account details</h2>
-
-          <div class="profile-row">
-            <span class="profile-label">Name</span>
-            <span class="profile-value">
-              <span id="userNameDisplay">User</span>
-              <input id="userNameInput" type="text"
-                     style="display:none; width:180px; font-size:13px;">
-            </span>
+          <div class="profile-avatar-container">
+            <img src="images/avatars/avatar1.png" alt="Profile" class="profile-avatar" id="displayAvatar">
           </div>
-          <div class="profile-row">
-            <span class="profile-label">Email</span>
-            <span class="profile-value">
-              <span id="userEmailDisplay">user@example.com</span>
-              <input id="userEmailInput" type="email"
-                     style="display:none; width:180px; font-size:13px;">
-            </span>
-          </div>
-          <div class="profile-row">
-            <span class="profile-label">Role</span>
-            <span class="profile-value">User</span>
+          <h2 class="profile-name" id="displayName">User Name</h2>
+          <div class="profile-role" id="displayRole">USER</div>
+          <div class="profile-location" id="displayLocationWrapper">
+            <span>📍</span> <span id="displayLocation">Location not set</span>
           </div>
 
-          <!-- Avatar selection section -->
-          <div class="avatar-section">
-            <h2 class="profile-section-title">Avatar</h2>
+          <div class="profile-stats">
+            <div class="stat-item">
+              <span class="stat-value">0</span>
+              <span class="stat-label">Bookings</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">0</span>
+              <span class="stat-label">Events</span>
+            </div>
+          </div>
+        </div>
 
-            <!-- Button to open avatar chooser -->
-            <button type="button"
-                    class="avatar-mode-btn active"
-                    id="openAvatarChooserBtn"
-                    onclick="toggleAvatarChooser()">
-              Choose / create avatar
-            </button>
+        <!-- Right Column: Tabs & Content -->
+        <div class="content-card">
+          <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('overview')">Overview</button>
+            <button class="tab-btn" onclick="showTab('edit')">Edit Profile</button>
+          </div>
 
-            <!-- Hidden avatar chooser panel -->
-            <div id="avatarChooserPanel" style="display:none; margin-top:10px;">
-              <div class="avatar-modes">
-                <button type="button" class="avatar-mode-btn active"
-                        data-mode="choose" onclick="setAvatarMode('choose')">
-                  Preset avatars
-                </button>
-                <button type="button" class="avatar-mode-btn"
-                        data-mode="upload" onclick="setAvatarMode('upload')">
-                  Upload photo
-                </button>
-                <button type="button" class="avatar-mode-btn"
-                        data-mode="ai" onclick="setAvatarMode('ai')">
-                  Generate with AI
-                </button>
-              </div>
-
-              <!-- upload -->
-              <div class="avatar-upload" id="avatarUploadBox">
-                <input type="file" id="avatarFileInput" accept="image/*">
-              </div>
-
-              <!-- preset avatars (4 options) -->
-              <div class="avatar-list" id="avatarList">
-                <label>
-                  <input type="radio" name="avatar" value="images/avatars/girl1.png" checked>
-                  <img src="images/avatars/avatar1.png" alt="Avatar 1" class="avatar-option">
-                </label>
-                <label>
-                  <input type="radio" name="avatar" value="images/avatars/girl2.png">
-                  <img src="images/avatars/avatar2.png" alt="Avatar 2" class="avatar-option">
-                </label>
-                <label>
-                  <input type="radio" name="avatar" value="images/avatars/boy1.png">
-                  <img src="images/avatars/avatar3.png" alt="Avatar 3" class="avatar-option">
-                </label>
-                <label>
-                  <input type="radio" name="avatar" value="images/avatars/boy2.png">
-                  <img src="images/avatars/avatar4.png" alt="Avatar 4" class="avatar-option">
-                </label>
-              </div>
+          <!-- Tab: Overview -->
+          <div id="tab-overview" class="tab-content active">
+            <div class="info-group">
+              <label class="info-label">Bio</label>
+              <div class="info-value" id="displayBio">No bio added yet. Tell us about yourself!</div>
             </div>
 
-            <div class="avatar-preview">
-              Current avatar:
-              <img id="avatarPreviewImg"
-                   src="images/avatars/avatar2.png"
-                   alt="Current avatar"
-                   class="avatar-preview-img">
+            <div class="info-group">
+              <label class="info-label">Contact Information</label>
+              <div class="info-value">
+                <div style="margin-bottom: 8px;">📧 <span id="displayEmail">email@example.com</span></div>
+                <div>📞 <span id="displayPhone">No phone number</span></div>
+              </div>
             </div>
           </div>
 
-          <hr style="margin:12px 0; border:none; border-top:1px solid #e0e6ee;" />
+          <!-- Tab: Edit -->
+          <div id="tab-edit" class="tab-content">
+            <form id="profileForm" onsubmit="handleSave(event)">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="info-label">Full Name</label>
+                  <input type="text" id="inputName" required>
+                </div>
+                <div class="form-group">
+                  <label class="info-label">Email</label>
+                  <input type="email" id="inputEmail" required>
+                </div>
+                <div class="form-group">
+                  <label class="info-label">Phone Number</label>
+                  <input type="text" id="inputPhone" placeholder="+1 234 567 8900">
+                </div>
+                <div class="form-group">
+                  <label class="info-label">Location</label>
+                  <input type="text" id="inputLocation" placeholder="City, Country">
+                </div>
+                <div class="form-group full">
+                  <label class="info-label">Bio / About Me</label>
+                  <textarea id="inputBio" rows="4" placeholder="Share a little something about yourself..."></textarea>
+                </div>
 
-          <div class="profile-actions">
-            <button type="button" class="btn-outline"
-                    onclick="window.location.href='user-dashboard.html'">
-              Go to Dashboard
-            </button>
-            <button type="button" class="btn-primary"
-                    id="editProfileBtn" onclick="toggleEditProfile()">
-              Edit Profile
-            </button>
-            <button type="button" class="btn-primary"
-                    id="saveProfileBtn" style="display:none;"
-                    onclick="handleSaveProfile()">
-              Save Profile
-            </button>
-             <button type="button" class="logout-btn" onclick="handleLogout()" style="background: #ff4d4f; color: white; border: none; padding: 8px 20px; border-radius: 999px; font-weight: 600; cursor: pointer; margin-left: 10px;">
-                Logout
-            </button>
+                <div class="form-group full">
+                  <label class="info-label">Choose Avatar</label>
+                  <div class="avatar-options" id="avatarOptionsContainer">
+                    <!-- populated by JS -->
+                  </div>
+                  <input type="hidden" id="inputAvatarUrl">
+                </div>
+              </div>
+
+              <div style="text-align: right; margin-top: 20px;">
+                <button type="submit" class="save-btn">Save Changes</button>
+              </div>
+            </form>
           </div>
+
         </div>
       </div>
     </main>
-
-  <!-- floating emojis script -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const emojiLayer = document.getElementById('floatingEmojiLayer');
-      if (!emojiLayer) return;
-
-      const EMOJIS = ['🎉','🎊','🎈','🥳','🎂','🎟️','🎫','✨','🍾','🎵','🎤','🎧','📅'];
-
-      function createEmojiBubble() {
-        const span = document.createElement('span');
-        span.className = 'emoji-bubble';
-        span.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
-
-        const startLeft = Math.random() * 100;
-        const startTop  = Math.random() * 100;
-        const dx = (Math.random() * 40 - 20);
-        const dy = (Math.random() * 40 - 20);
-        const duration = 6 + Math.random() * 6;
-
-        span.style.left = startLeft + 'vw';
-        span.style.top  = startTop + 'vh';
-        span.style.setProperty('--dx', dx + 'vw');
-        span.style.setProperty('--dy', dy + 'vh');
-        span.style.animationDuration = duration + 's';
-
-        emojiLayer.appendChild(span);
-        setTimeout(() => span.remove(), duration * 1000);
-      }
-
-      setInterval(createEmojiBubble, 800);
-
-      // hook avatar radio change
-      document.querySelectorAll('input[name="avatar"]').forEach(radio => {
-        radio.addEventListener('change', updateAvatarPreviewFromChoice);
-      });
-    });
-  </script>
+  </div>
 
   <script>
     const API_BASE = 'http://localhost:9098';
+    const userId = localStorage.getItem('eventmate_userId');
+    const userRole = localStorage.getItem('eventmate_role'); // USER or ADMIN
+
+    // Emojis for background
+    document.addEventListener('DOMContentLoaded', () => {
+      loadProfile();
+      setupEmojis();
+      setupAvatarOptions();
+    });
+
+    async function loadProfile() {
+      if (!userId) {
+        // No user ID found, redirect to login
+        console.warn('No userId found in localStorage, redirecting to login.');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // visual feedback
+      document.getElementById('displayName').textContent = 'Loading...';
+
+      console.log('Fetching profile from database...');
+      showLoading(true);
+      try {
+        const response = await fetch(`${API_BASE}/api/users/${userId}`, {
+          cache: 'no-cache' // Ensure we fetch from DB
+        });
+        if (!response.ok) {
+          if (response.status === 404) {
+            console.error('User not found');
+            alert('User profile not found. Please login again.');
+            handleLogout();
+            return;
+          }
+          throw new Error('Failed to fetch profile: ' + response.statusText);
+        }
+
+        const data = await response.json();
+        console.log('User profile loaded:', data);
+
+        // Handle both old (User only) and new (UserProfileResponse) formats gracefully
+        const user = data.user || data;
+        const stats = {
+          bookings: data.bookingCount !== undefined ? data.bookingCount : 0,
+          events: data.eventsCount !== undefined ? data.eventsCount : 0
+        };
+
+        // Populate UI
+        document.getElementById('displayName').textContent = user.fullName || 'User (Name not set)';
+        document.getElementById('displayRole').textContent = user.role || 'USER';
+
+        document.getElementById('displayEmail').textContent = user.email || '';
+        document.getElementById('displayPhone').textContent = user.phoneNumber || 'No phone number';
+        document.getElementById('displayLocation').textContent = user.location || 'Location not set';
+        document.getElementById('displayBio').textContent = user.bio || 'No bio added yet.';
+
+        if (user.avatarUrl) {
+          document.getElementById('displayAvatar').src = user.avatarUrl;
+        }
+
+        // Update Stats
+        const statValues = document.querySelectorAll('.stat-value');
+        if (statValues.length >= 2) {
+          statValues[0].textContent = stats.bookings;
+          statValues[1].textContent = stats.events;
+        }
+
+        // Populate Form
+        document.getElementById('inputName').value = user.fullName || '';
+        document.getElementById('inputEmail').value = user.email || '';
+        document.getElementById('inputPhone').value = user.phoneNumber || '';
+        document.getElementById('inputLocation').value = user.location || '';
+        document.getElementById('inputBio').value = user.bio || '';
+        document.getElementById('inputAvatarUrl').value = user.avatarUrl || 'images/avatars/avatar1.png';
+
+        highlightSelectedAvatar(user.avatarUrl || 'images/avatars/avatar1.png');
+
+      } catch (e) {
+        console.error('Error loading profile:', e);
+        document.getElementById('displayName').textContent = 'Error loading profile';
+        alert('Could not load profile. Please check your connection or login again.');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function handleSave(e) {
+      e.preventDefault();
+      showLoading(true);
+
+      const payload = {
+        fullName: document.getElementById('inputName').value,
+        email: document.getElementById('inputEmail').value,
+        phoneNumber: document.getElementById('inputPhone').value,
+        location: document.getElementById('inputLocation').value,
+        bio: document.getElementById('inputBio').value,
+        avatarUrl: document.getElementById('inputAvatarUrl').value
+      };
+
+      try {
+        const response = await fetch(`${API_BASE}/api/users/${userId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          alert('Profile updated successfully!');
+          loadProfile(); // Refresh UI
+          showTab('overview');
+        } else {
+          try {
+            const err = await response.json();
+            alert('Error: ' + (err.message || 'Update failed'));
+          } catch (e) {
+            alert('Error updating profile');
+          }
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Network error, try again.');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function showTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+      const btnIndex = tabName === 'overview' ? 0 : 1;
+      document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
+    }
+
+    function setupAvatarOptions() {
+      const avatars = [
+        'images/avatars/avatar1.png',
+        'images/avatars/avatar2.png',
+        'images/avatars/avatar3.png',
+        'images/avatars/avatar4.png'
+      ];
+
+      const container = document.getElementById('avatarOptionsContainer');
+      container.innerHTML = '';
+
+      // Filter unique (since list above has duplicates in original code assumption, I'll just use a clean list)
+      // Actually let's assume standard set if files exist, otherwise fallback
+      // For now I'll just use the list provided in previous code + common ones. 
+      // I'll stick to the ones I saw in the previous file: avatar1-4, girl1-2, boy1-2
+
+      avatars.forEach(src => {
+        const label = document.createElement('label');
+        label.className = 'avatar-option-label';
+        label.onclick = () => selectAvatar(src);
+
+        const img = document.createElement('img');
+        img.src = src;
+        img.className = 'avatar-option-img';
+        img.dataset.src = src;
+
+        label.appendChild(img);
+        container.appendChild(label);
+      });
+    }
+
+    function selectAvatar(src) {
+      document.getElementById('inputAvatarUrl').value = src;
+      highlightSelectedAvatar(src);
+    }
+
+    function highlightSelectedAvatar(src) {
+      document.querySelectorAll('.avatar-option-label').forEach(lbl => {
+        const img = lbl.querySelector('img');
+        if (img.dataset.src === src) {
+          lbl.classList.add('selected');
+        } else {
+          lbl.classList.remove('selected');
+        }
+      });
+    }
 
     function handleLogout() {
-      // Clear local storage or session if needed
       localStorage.removeItem('eventmate_token');
       localStorage.removeItem('eventmate_role');
       localStorage.removeItem('eventmate_userId');
@@ -348,125 +585,32 @@
     }
 
     function handleBackDashboard() {
-        window.location.href = 'user-dashboard.html';
+      window.location.href = 'user-dashboard.html';
     }
 
-    // ----- Avatar logic -----
-    function toggleAvatarChooser() {
-      const panel = document.getElementById('avatarChooserPanel');
-      if (!panel) return;
-      panel.style.display =
-        panel.style.display === 'none' || panel.style.display === '' ? 'block' : 'none';
+    function showLoading(show) {
+      document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
     }
 
-    function setAvatarMode(mode) {
-      document.querySelectorAll('.avatar-mode-btn[data-mode]').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.mode === mode);
-      });
+    function setupEmojis() {
+      const emojiLayer = document.getElementById('floatingEmojiLayer');
+      if (!emojiLayer) return;
+      const EMOJIS = ['🎉', '🎊', '🎈', '🥳', '📅', '✨', '🍾', '🎵'];
 
-      const uploadBox = document.getElementById('avatarUploadBox');
-      const avatarList = document.getElementById('avatarList');
-
-      if (mode === 'upload') {
-        uploadBox.style.display = 'block';
-        avatarList.style.display = 'none';
-      } else {
-        uploadBox.style.display = 'none';
-        avatarList.style.display = 'flex';
-        if (mode === 'ai') {
-          alert('AI avatar generation is not implemented yet. Later you can call an AI API here.');
-        }
-      }
-    }
-
-    function updateAvatarPreviewFromChoice() {
-      const checkedAvatar = document.querySelector('input[name="avatar"]:checked');
-      if (!checkedAvatar) return;
-      document.getElementById('avatarPreviewImg').src = checkedAvatar.value;
-    }
-
-    const avatarFileInput = document.getElementById('avatarFileInput');
-    if (avatarFileInput) {
-      avatarFileInput.addEventListener('change', () => {
-        const file = avatarFileInput.files[0];
-        if (!file) return;
-        const url = URL.createObjectURL(file);
-        document.getElementById('avatarPreviewImg').src = url;
-      });
-    }
-
-    // ----- Edit profile logic -----
-    let editMode = false;
-
-    function toggleEditProfile() {
-      editMode = !editMode;
-
-      const nameDisplay = document.getElementById('userNameDisplay');
-      const emailDisplay = document.getElementById('userEmailDisplay');
-      const nameInput = document.getElementById('userNameInput');
-      const emailInput = document.getElementById('userEmailInput');
-      const editBtn = document.getElementById('editProfileBtn');
-      const saveBtn = document.getElementById('saveProfileBtn');
-
-      if (editMode) {
-        nameInput.value = nameDisplay.textContent;
-        emailInput.value = emailDisplay.textContent;
-
-        nameDisplay.style.display = 'none';
-        emailDisplay.style.display = 'none';
-        nameInput.style.display = 'inline-block';
-        emailInput.style.display = 'inline-block';
-
-        editBtn.style.display = 'none';
-        saveBtn.style.display = 'inline-block';
-      } else {
-        nameDisplay.style.display = 'inline';
-        emailDisplay.style.display = 'inline';
-        nameInput.style.display = 'none';
-        emailInput.style.display = 'none';
-
-        editBtn.style.display = 'inline-block';
-        saveBtn.style.display = 'none';
-      }
-    }
-
-    function handleSaveProfile() {
-      const nameInput = document.getElementById('userNameInput');
-      const emailInput = document.getElementById('userEmailInput');
-      const nameDisplay = document.getElementById('userNameDisplay');
-      const emailDisplay = document.getElementById('userEmailDisplay');
-
-      const modeBtn = document.querySelector('.avatar-mode-btn[data-mode].active');
-      const mode = modeBtn ? modeBtn.dataset.mode : 'choose';
-
-      let avatarValue = null;
-      if (mode === 'choose') {
-        const checkedAvatar = document.querySelector('input[name="avatar"]:checked');
-        avatarValue = checkedAvatar ? checkedAvatar.value : null;
-      } else if (mode === 'upload') {
-        const file = avatarFileInput && avatarFileInput.files[0];
-        avatarValue = file ? ('[local-file] ' + file.name) : null;
-      } else if (mode === 'ai') {
-        avatarValue = '[ai-generated-placeholder]';
-      }
-
-      // For now just update UI; later send to backend via fetch()
-      nameDisplay.textContent = nameInput.value || 'User';
-      emailDisplay.textContent = emailInput.value || 'user@example.com';
-
-      console.log('Saving profile:', {
-        name: nameInput.value,
-        email: emailInput.value,
-        avatarMode: mode,
-        avatar: avatarValue
-      });
-
-      alert('Profile saved locally (wire this to backend later).');
-
-      // exit edit mode
-      editMode = true;
-      toggleEditProfile();
+      setInterval(() => {
+        const span = document.createElement('span');
+        span.className = 'emoji-bubble';
+        span.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+        span.style.left = Math.random() * 100 + 'vw';
+        span.style.top = Math.random() * 100 + 'vh';
+        span.style.setProperty('--dx', (Math.random() * 40 - 20) + 'vw');
+        span.style.setProperty('--dy', (Math.random() * 40 - 20) + 'vh');
+        span.style.animationDuration = (6 + Math.random() * 6) + 's';
+        emojiLayer.appendChild(span);
+        setTimeout(() => span.remove(), 12000);
+      }, 800);
     }
   </script>
 </body>
+
 </html>

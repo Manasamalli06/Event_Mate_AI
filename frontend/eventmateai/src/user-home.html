@@ -613,6 +613,28 @@
   <script>
     const API_BASE = 'http://localhost:9098';
 
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchUserName();
+      initHeroSlider(); // Ensure slider starts
+    });
+
+    async function fetchUserName() {
+      const userId = localStorage.getItem('eventmate_userId');
+      if (!userId) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/users/${userId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const user = data.user || data;
+          const btnSpan = document.querySelector('.logout-btn span');
+          if (btnSpan && user.fullName) {
+            btnSpan.textContent = user.fullName.split(' ')[0];
+          }
+        }
+      } catch (e) { console.warn('Failed to load user name', e); }
+    }
+
     function handleLogout() {
       window.location.href = 'login.html';
     }

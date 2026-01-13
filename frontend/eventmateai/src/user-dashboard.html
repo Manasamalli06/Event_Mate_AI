@@ -182,7 +182,33 @@
   </div>
 
   <script>
+    const API_BASE = 'http://localhost:9098';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchUserName();
+    });
+
+    async function fetchUserName() {
+      const userId = localStorage.getItem('eventmate_userId');
+      if (!userId) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/users/${userId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const user = data.user || data;
+          const btnSpan = document.querySelector('.logout-btn span');
+          if (btnSpan && user.fullName) {
+            btnSpan.textContent = user.fullName.split(' ')[0]; // Just first name
+          }
+        }
+      } catch (e) { console.warn('Failed to load user name', e); }
+    }
+
     function handleLogout() {
+      localStorage.removeItem('eventmate_token');
+      localStorage.removeItem('eventmate_role');
+      localStorage.removeItem('eventmate_userId');
       window.location.href = 'login.html';
     }
 
@@ -197,6 +223,10 @@
     // Load an external HTML page into the mainContent div
     async function loadHtmlIntoMain(url) {
       const main = document.getElementById('mainContent');
+      // Execute any inline scripts in the loaded HTML
+      // Basic fetch only gets text, scripts inside won't run automatically if just setting innerHTML
+      // So we must manually execute them.
+
       main.innerHTML = '<div class="loading-text">Loading...</div>';
       try {
         const res = await fetch(url);
@@ -209,8 +239,25 @@
         // Basic extract: take only body innerHTML to avoid duplicating <html>, <head>
         const temp = document.createElement('div');
         temp.innerHTML = html;
+
+        // Remove scripts from temp so we can run them manually
+        const scripts = temp.querySelectorAll('script');
+        const scriptContents = [];
+        scripts.forEach(s => {
+          scriptContents.push(s.innerHTML);
+          s.remove();
+        });
+
         const body = temp.querySelector('body');
-        main.innerHTML = body ? body.innerHTML : html;
+        main.innerHTML = body ? body.innerHTML : temp.innerHTML;
+
+        // Run scripts
+        scriptContents.forEach(code => {
+          const script = document.createElement('script');
+          script.textContent = code;
+          document.body.appendChild(script);
+        });
+
       } catch (err) {
         console.error('Error loading page:', err);
         main.innerHTML = '<div class="error-text">Error connecting to server.</div>';
@@ -222,21 +269,21 @@
 
       if (page === 'home') {
         const main = document.getElementById('mainContent');
-        main.innerHTML = `
-          <div class="placeholder-box">
-            <h2 class="placeholder-title">Welcome to EventMate AI</h2>
-            <p class="placeholder-text">
-              Your moving slides / hero carousel can go here.
-            </p>
-          </div>`;
+        // Check if user-home.html exists and load it? 
+        // Or keep the placeholder. The previous file had user-home.html separate. 
+        // The original user-home.html IS the dashboard main page in some flows.
+        // But here we are in user-dashboard.html loading sub-pages.
+        // Let's load 'user-home.html' (which has the slides/grid) if it works as a fragment
+        // But user-home.html is a full page. 
+        // Let's assume for now we keep the placeholder or try to load user-home.html content.
+        // Based on file list, user-home.html exists (44kb). It's likely the "Home" page with events grid.
+        loadHtmlIntoMain('user-home.html');
+
       } else if (page === 'events') {
-        // Load user-events.html into center
-        loadHtmlIntoMain('user-events.html', 'Events');
+        loadHtmlIntoMain('user-events.html');
       } else if (page === 'booking') {
-        // Load booking.html into center
-        loadHtmlIntoMain('booking.html');
+        loadHtmlIntoMain('user-booking.html'); // Corrected filename based on list_dir
       } else if (page === 'my-bookings') {
-        // Load user-my-bookings.html into center
         loadHtmlIntoMain('user-my-bookings.html');
       }
     }

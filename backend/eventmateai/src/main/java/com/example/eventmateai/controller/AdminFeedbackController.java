@@ -23,6 +23,11 @@ public class AdminFeedbackController {
         this.feedbackService = feedbackService;
     }
 
+    @GetMapping
+    public java.util.List<AdminFeedbackDto> getFeedbacks() {
+        return feedbackService.getAllFeedbacks();
+    }
+
     @GetMapping("/{id}")
     public AdminFeedbackDto getFeedback(@PathVariable Long id) {
         return feedbackService.getAdminFeedbackDto(id);
@@ -30,7 +35,7 @@ public class AdminFeedbackController {
 
     @PutMapping("/{id}/status")
     public AdminFeedbackDto updateStatus(@PathVariable Long id,
-                                         @RequestParam ReviewStatus status) {
+            @RequestParam ReviewStatus status) {
         return feedbackService.updateStatus(id, status);
     }
 }

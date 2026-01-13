@@ -31,7 +31,7 @@ public class EventController {
     private final BookingRepository bookingRepository;
 
     public EventController(EventRepository eventRepository,
-                           BookingRepository bookingRepository) {
+            BookingRepository bookingRepository) {
         this.eventRepository = eventRepository;
         this.bookingRepository = bookingRepository;
     }
@@ -52,8 +52,11 @@ public class EventController {
         e.setCostPerTicket(req.getCostPerTicket());
         e.setCurrency(req.getCurrency());
         e.setStatus(req.getStatus());
+        e.setCreatedByUserId(req.getCreatedByUserId()); // Set creator
         return eventRepository.save(e);
     }
+
+    // ...
 
     // 1b) Update existing event
     @PutMapping("/{id}")
@@ -124,8 +127,8 @@ public class EventController {
 
         // Simple AI-like generation (can be replaced with actual AI API call)
         String description = "Join us for '" + title + "', an exciting " + category +
-            " event taking place at " + venue + ". This promises to be an unforgettable experience " +
-            "filled with engaging activities, networking opportunities, and memorable moments for all attendees.";
+                " event taking place at " + venue + ". This promises to be an unforgettable experience " +
+                "filled with engaging activities, networking opportunities, and memorable moments for all attendees.";
 
         return Map.of("description", description);
     }
@@ -143,39 +146,103 @@ public class EventController {
         private String currency;
         private String status;
         private String location;
+        private Long createdByUserId; // Add field
 
-        public String getTitle() { return title; }
-        public void setTitle(String title) { this.title = title; }
+        public String getTitle() {
+            return title;
+        }
 
-        public String getDateTime() { return dateTime; }
-        public void setDateTime(String dateTime) { this.dateTime = dateTime; }
+        public void setTitle(String title) {
+            this.title = title;
+        }
 
-        public String getVenue() { return venue; }
-        public void setVenue(String venue) { this.venue = venue; }
+        public String getDateTime() {
+            return dateTime;
+        }
 
-        public String getCategory() { return category; }
-        public void setCategory(String category) { this.category = category; }
+        public void setDateTime(String dateTime) {
+            this.dateTime = dateTime;
+        }
 
-        public String getDescription() { return description; }
-        public void setDescription(String description) { this.description = description; }
+        public String getVenue() {
+            return venue;
+        }
 
-        public String getImageUrl() { return imageUrl; }
-        public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+        public void setVenue(String venue) {
+            this.venue = venue;
+        }
 
-        public Integer getAvailableSeats() { return availableSeats; }
-        public void setAvailableSeats(Integer availableSeats) { this.availableSeats = availableSeats; }
+        public String getCategory() {
+            return category;
+        }
 
-        public Double getCostPerTicket() { return costPerTicket; }
-        public void setCostPerTicket(Double costPerTicket) { this.costPerTicket = costPerTicket; }
+        public void setCategory(String category) {
+            this.category = category;
+        }
 
-        public String getCurrency() { return currency; }
-        public void setCurrency(String currency) { this.currency = currency; }
+        public String getDescription() {
+            return description;
+        }
 
-        public String getStatus() { return status; }
-        public void setStatus(String status) { this.status = status; }
+        public void setDescription(String description) {
+            this.description = description;
+        }
 
-        public String getLocation() { return location; }
-        public void setLocation(String location) { this.location = location; }
+        public String getImageUrl() {
+            return imageUrl;
+        }
+
+        public void setImageUrl(String imageUrl) {
+            this.imageUrl = imageUrl;
+        }
+
+        public Integer getAvailableSeats() {
+            return availableSeats;
+        }
+
+        public void setAvailableSeats(Integer availableSeats) {
+            this.availableSeats = availableSeats;
+        }
+
+        public Double getCostPerTicket() {
+            return costPerTicket;
+        }
+
+        public void setCostPerTicket(Double costPerTicket) {
+            this.costPerTicket = costPerTicket;
+        }
+
+        public String getCurrency() {
+            return currency;
+        }
+
+        public void setCurrency(String currency) {
+            this.currency = currency;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public String getLocation() {
+            return location;
+        }
+
+        public void setLocation(String location) {
+            this.location = location;
+        }
+
+        public Long getCreatedByUserId() {
+            return createdByUserId;
+        }
+
+        public void setCreatedByUserId(Long createdByUserId) {
+            this.createdByUserId = createdByUserId;
+        }
     }
 
     // DTO for generate description request
@@ -184,14 +251,29 @@ public class EventController {
         private String category;
         private String venue;
 
-        public String getTitle() { return title; }
-        public void setTitle(String title) { this.title = title; }
+        public String getTitle() {
+            return title;
+        }
 
-        public String getCategory() { return category; }
-        public void setCategory(String category) { this.category = category; }
+        public void setTitle(String title) {
+            this.title = title;
+        }
 
-        public String getVenue() { return venue; }
-        public void setVenue(String venue) { this.venue = venue; }
+        public String getCategory() {
+            return category;
+        }
+
+        public void setCategory(String category) {
+            this.category = category;
+        }
+
+        public String getVenue() {
+            return venue;
+        }
+
+        public void setVenue(String venue) {
+            this.venue = venue;
+        }
 
     }
 }

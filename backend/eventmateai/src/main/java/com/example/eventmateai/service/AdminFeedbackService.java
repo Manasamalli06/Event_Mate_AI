@@ -19,8 +19,8 @@ public class AdminFeedbackService {
     private final UserRepository userRepository;
 
     public AdminFeedbackService(FeedbackRepository feedbackRepository,
-                                EventRepository eventRepository,
-                                UserRepository userRepository) {
+            EventRepository eventRepository,
+            UserRepository userRepository) {
         this.feedbackRepository = feedbackRepository;
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
@@ -35,7 +35,7 @@ public class AdminFeedbackService {
         User user = userRepository.findById(f.getUserId()).orElse(null);
 
         String eventName = event != null ? event.getTitle() : null;
-        String userName = user != null ? user.getFullName() : null;   // adapt
+        String userName = user != null ? user.getFullName() : null; // adapt
         String avatarUrl = user != null ? user.getAvatarUrl() : null; // adapt
 
         return new AdminFeedbackDto(
@@ -48,8 +48,14 @@ public class AdminFeedbackService {
                 f.getAttendedDate(),
                 f.getRating(),
                 f.getComments(),
-                f.getStatus()
-        );
+                f.getStatus());
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<AdminFeedbackDto> getAllFeedbacks() {
+        return feedbackRepository.findAll().stream()
+                .map(f -> getAdminFeedbackDto(f.getId()))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @Transactional

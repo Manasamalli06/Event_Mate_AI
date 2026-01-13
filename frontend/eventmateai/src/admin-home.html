@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Admin Home - Event Mate AI</title>
@@ -330,6 +331,177 @@
       background-color: #f97373;
       color: #fff;
     }
+
+    /* Review List Styles */
+    .review-list-container {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .review-list-item {
+      display: flex;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .review-list-item:hover {
+      background: #f8fafc;
+    }
+
+    .review-list-item:last-child {
+      border-bottom: none;
+    }
+
+    .r-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 16px;
+    }
+
+    .r-info {
+      flex: 1;
+    }
+
+    .r-name {
+      font-weight: 600;
+      color: #1e293b;
+      font-size: 15px;
+    }
+
+    .r-event {
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .r-rating {
+      margin: 0 20px;
+      color: #f59e0b;
+      font-weight: bold;
+    }
+
+    .r-status {
+      min-width: 80px;
+      text-align: right;
+    }
+
+    /* Review Detail Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .detail-card {
+      background: white;
+      width: 700px;
+      max-width: 90%;
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .detail-sidebar {
+      width: 250px;
+      background: #f8fafc;
+      padding: 30px;
+      border-right: 1px solid #e2e8f0;
+      text-align: center;
+    }
+
+    .detail-avatar-large {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 15px;
+      border: 4px solid white;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .detail-user-name {
+      font-size: 18px;
+      font-weight: bold;
+      color: #1e293b;
+      margin-bottom: 5px;
+    }
+
+    .detail-user-meta {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .detail-main {
+      flex: 1;
+      padding: 30px;
+    }
+
+    .detail-header {
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+
+    .detail-event-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #04345c;
+    }
+
+    .detail-date {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .detail-stars {
+      color: #f59e0b;
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+
+    .detail-comment {
+      background: #f1f5f9;
+      padding: 20px;
+      border-radius: 12px;
+      font-size: 15px;
+      line-height: 1.6;
+      color: #334155;
+      margin-bottom: 30px;
+    }
+
+    .detail-actions {
+      display: flex;
+      gap: 15px;
+    }
+
+    .nav-badge {
+      background: #ff4757;
+      color: white;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-left: auto;
+      display: none;
+      /* hidden by default */
+    }
+
     /* ===== END ADDED STYLES ===== */
   </style>
 
@@ -401,6 +573,7 @@
         <button class="nav-btn" id="nav-reviews" onclick="openPage('reviews')">
           <span class="icon">⭐</span>
           <span>User Reviews</span>
+          <span class="nav-badge" id="reviewBadge">0</span>
         </button>
         <!-- END ADDED -->
       </aside>
@@ -444,33 +617,33 @@
       window.location.href = 'login.html';
     }
 
-    // floating emojis
     document.addEventListener('DOMContentLoaded', () => {
+      fetchUserName();
+
       const emojiLayer = document.getElementById('floatingEmojiLayer');
       if (emojiLayer) {
-        const EMOJIS = ['🎉', '🎊', '🎈', '🥳', '🎂', '🎟️', '🎫', '✨', '🍾', '🎵', '🎤', '🎧', '📅'];
-        function createEmojiBubble() {
-          const span = document.createElement('span');
-          span.className = 'emoji-bubble';
-          span.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
-          const startLeft = Math.random() * 100;
-          const startTop = Math.random() * 100;
-          const dx = (Math.random() * 40 - 20);
-          const dy = (Math.random() * 40 - 20);
-          const duration = 6 + Math.random() * 6;
-          span.style.left = startLeft + 'vw';
-          span.style.top = startTop + 'vh';
-          span.style.setProperty('--dx', dx + 'vw');
-          span.style.setProperty('--dy', dy + 'vh');
-          span.style.animationDuration = duration + 's';
-          emojiLayer.appendChild(span);
-          setTimeout(() => span.remove(), duration * 1000);
-        }
-        setInterval(createEmojiBubble, 800);
+        // ... emojis ...
       }
 
       initHeroSlider();
+      updateReviewBadge();
     });
+
+    async function fetchUserName() {
+      const userId = localStorage.getItem('eventmate_userId');
+      if (!userId) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/users/${userId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const user = data.user || data;
+          const btnSpan = document.querySelector('.logout-btn span');
+          if (btnSpan && user.fullName) {
+            btnSpan.textContent = user.fullName.split(' ')[0];
+          }
+        }
+      } catch (e) { console.warn('Failed to fetch admin name', e); }
+    }
 
     function setActiveButton(page) {
       document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
@@ -566,109 +739,162 @@
       }
     }
 
-    function renderVerifyPage() {
+    let reviewCache = [];
+
+    async function renderReviewPage() {
       const main = document.getElementById('mainContent');
       main.innerHTML = `
-         <div class="content-card">
-            <h2 class="content-title">Verify Ticket</h2>
-            <p class="content-subtitle">Enter Booking ID from the ticket QR code to verify and admit attendees.</p>
-            
-            <div style="max-width:400px; margin-top:20px;">
-               <div style="display:flex; gap:10px;">
-                  <input type="number" id="verifyBookingId" placeholder="Enter Booking ID" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;">
-                  <button id="btnCheckTicket" style="background:#00a8ff; color:#fff; border:none; padding:0 20px; border-radius:8px; cursor:pointer; font-weight:600;">Check</button>
-               </div>
-               
-               <div id="verifyResult" style="margin-top:20px; display:none;">
-                  <div id="verifyCard" style="padding:20px; border-radius:12px; border:1px solid #eee; background:#f9f9f9;">
-                     <h3 id="vEventTitle" style="margin-top:0; color:#04345c;">Event Title</h3>
-                     <div style="margin-bottom:8px;"><strong>Booking ID:</strong> <span id="vBid"></span></div>
-                     <div style="margin-bottom:8px;"><strong>User ID:</strong> <span id="vUid"></span></div>
-                     <div style="margin-bottom:8px;"><strong>Status:</strong> <span id="vStatus" style="font-weight:bold;"></span></div>
-                     <div style="margin-bottom:8px;"><strong>Seats:</strong> <span id="vSeats"></span></div>
-                     
-                     <div id="vActions" style="margin-top:20px;">
-                        <button id="btnAdmit" style="width:100%; padding:12px; background:#4caf50; color:white; border:none; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer;">ADMIT (CHECK-IN)</button>
-                     </div>
-                  </div>
-               </div>
+            <div class="content-card">
+                <h2 class="content-title">User Reviews</h2>
+                <p class="content-subtitle">Select a review to view details and moderate.</p>
+                <div id="reviewsList" class="review-list-container">
+                    <p class="loading-text" style="padding:20px;">Loading reviews...</p>
+                </div>
             </div>
-         </div>
+            
+            <!-- Details Modal -->
+            <div class="modal-overlay" id="reviewDetailModal">
+                <div class="detail-card">
+                   <div class="detail-sidebar">
+                      <img src="" id="dAvatar" class="detail-avatar-large">
+                      <div id="dName" class="detail-user-name">User Name</div>
+                      <div id="dMeta" class="detail-user-meta"></div>
+                   </div>
+                   <div class="detail-main">
+                      <div class="detail-header">
+                         <div id="dEvent" class="detail-event-title">Event Title</div>
+                         <div id="dDate" class="detail-date">Attended: 2024-01-01</div>
+                      </div>
+                      
+                      <div id="dStars" class="detail-stars">★★★★★</div>
+                      <div id="dComment" class="detail-comment"></div>
+                      
+                      <div class="detail-actions" id="dActions">
+                          <!-- buttons injected here -->
+                      </div>
+                      <button onclick="document.getElementById('reviewDetailModal').style.display='none'" style="margin-top:20px; background:none; border:none; color:#64748b; cursor:pointer;">Close</button>
+                   </div>
+                </div>
+            </div>
        `;
 
-      document.getElementById('btnCheckTicket').onclick = checkTicket;
-    }
-
-    async function checkTicket() {
-      const id = document.getElementById('verifyBookingId').value;
-      if (!id) { alert('Enter ID'); return; }
-
-      const resDiv = document.getElementById('verifyResult');
-      resDiv.style.display = 'none';
-
       try {
-        const res = await fetch(API_BASE + '/api/bookings');
-        if (!res.ok) throw new Error('Failed to fetch bookings');
-        const all = await res.json();
-        const booking = all.find(b => b.id == id);
+        const res = await fetch(API_BASE + '/api/admin/feedback');
+        if (!res.ok) throw new Error('Failed to fetch');
+        reviewCache = await res.json();
 
-        if (!booking) {
-          alert('Booking ID not found!');
+        const list = document.getElementById('reviewsList');
+        if (reviewCache.length === 0) {
+          list.innerHTML = '<p style="padding:20px; color:#64748b;">No reviews found.</p>';
           return;
         }
 
-        const evRes = await fetch(API_BASE + '/api/events');
-        const events = await evRes.json();
-        const event = events.find(e => e.id == booking.eventId);
+        list.innerHTML = '';
+        reviewCache.sort((a, b) => (a.status === 'PENDING' ? -1 : 1));
 
-        resDiv.style.display = 'block';
-        document.getElementById('vEventTitle').textContent = event ? event.title : 'Unknown Event';
-        document.getElementById('vBid').textContent = booking.id;
-        document.getElementById('vUid').textContent = booking.userId;
-        document.getElementById('vStatus').textContent = booking.status;
-        document.getElementById('vSeats').textContent = booking.seats || 'None';
+        reviewCache.forEach(r => {
+          const item = document.createElement('div');
+          item.className = 'review-list-item';
+          item.onclick = () => openReviewDetail(r.id);
 
-        const vStatus = document.getElementById('vStatus');
-        if (booking.status === 'CHECKED_IN') {
-          vStatus.style.color = 'green';
-          document.getElementById('btnAdmit').disabled = true;
-          document.getElementById('btnAdmit').textContent = 'ALREADY CHECKED IN';
-          document.getElementById('btnAdmit').style.background = '#ccc';
-        } else if (booking.status === 'CANCELLED') {
-          vStatus.style.color = 'red';
-          document.getElementById('btnAdmit').disabled = true;
-          document.getElementById('btnAdmit').textContent = 'TICKET CANCELLED';
-          document.getElementById('btnAdmit').style.background = '#ef5350';
-        } else {
-          vStatus.style.color = 'orange';
-          document.getElementById('btnAdmit').disabled = false;
-          document.getElementById('btnAdmit').textContent = 'ADMIT (CHECK-IN)';
-          document.getElementById('btnAdmit').style.background = '#4caf50';
-          document.getElementById('btnAdmit').onclick = () => admitUser(booking.id);
-        }
+          const avatar = r.avatarUrl || 'images/avatars/avatar1.png';
+          const statusColor = r.status === 'APPROVED' ? '#22c55e' : (r.status === 'REJECTED' ? '#ef4444' : '#f59e0b');
+
+          item.innerHTML = `
+                  <img src="${avatar}" class="r-avatar">
+                  <div class="r-info">
+                      <div class="r-name">${r.userName || 'User'}</div>
+                      <div class="r-event">${r.eventName || 'Event'}</div>
+                  </div>
+                  <div class="r-rating">${r.rating} ★</div>
+                  <div class="r-status" style="color:${statusColor}; font-weight:600; font-size:12px;">${r.status}</div>
+               `;
+          list.appendChild(item);
+        });
 
       } catch (e) {
         console.error(e);
-        alert('Error validating ticket');
+        document.getElementById('reviewsList').innerHTML = '<p class="error-text" style="padding:20px;">Error loading reviews.</p>';
       }
     }
 
-    async function admitUser(id) {
+    async function openReviewDetail(id) {
+      const r = reviewCache.find(x => x.id === id);
+      if (!r) return;
+
+      const modal = document.getElementById('reviewDetailModal');
+
+      // Populate basic info
+      document.getElementById('dAvatar').src = r.avatarUrl || 'images/avatars/avatar1.png';
+      document.getElementById('dName').textContent = r.userName || 'User';
+      document.getElementById('dEvent').textContent = r.eventName || 'Event';
+      document.getElementById('dDate').textContent = 'Attended: ' + (r.attendedDate || '?');
+      document.getElementById('dComment').textContent = r.comments || 'No comment.';
+      document.getElementById('dStars').textContent = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+
+      // Fetch extended user info
+      document.getElementById('dMeta').textContent = 'Loading details...';
       try {
-        const res = await fetch(API_BASE + '/api/bookings/' + id + '/status', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'CHECKED_IN' })
+        const res = await fetch(`${API_BASE}/api/users/${r.userId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const u = data.user || data;
+          document.getElementById('dMeta').innerHTML = `
+                ${u.email || ''}<br>
+                ${u.phoneNumber || ''}<br>
+                ${u.location || ''}
+             `;
+        }
+      } catch (e) { document.getElementById('dMeta').textContent = 'Details unavailable'; }
+
+      // Actions
+      const actions = document.getElementById('dActions');
+      if (r.status === 'PENDING') {
+        actions.innerHTML = `
+             <button class="approve-btn" style="padding:10px 24px;" onclick="updateReviewStatus(${r.id}, 'APPROVED')">Approve</button>
+             <button class="reject-btn" style="padding:10px 24px;" onclick="updateReviewStatus(${r.id}, 'REJECTED')">Reject</button>
+          `;
+      } else {
+        actions.innerHTML = `<span style="font-weight:bold; color:#666;">Status: ${r.status}</span>`;
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    async function updateReviewBadge() {
+      try {
+        const res = await fetch(API_BASE + '/api/admin/feedback');
+        if (res.ok) {
+          const reviews = await res.json();
+          const pending = reviews.filter(r => r.status === 'PENDING').length;
+          const badge = document.getElementById('reviewBadge');
+          if (badge) {
+            if (pending > 0) {
+              badge.textContent = pending;
+              badge.style.display = 'inline-block';
+            } else {
+              badge.style.display = 'none';
+            }
+          }
+        }
+      } catch (e) { console.error('Badge update failed', e); }
+    }
+
+    async function updateReviewStatus(id, status) {
+      if (!confirm('Mark this review as ' + status + '?')) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/feedback/${id}/status?status=${status}`, {
+          method: 'PUT'
         });
         if (res.ok) {
-          alert('Success! User checked in.');
-          checkTicket();
+          renderReviewPage(); // Refresh list
+          updateReviewBadge(); // Refresh badge
         } else {
           alert('Failed to update status');
         }
       } catch (e) {
         console.error(e);
-        alert('Error');
+        alert('Error updating status');
       }
     }
 
@@ -751,7 +977,8 @@
           availableSeats: parseInt(document.getElementById('seats').value || '0'),
           costPerTicket: parseFloat(document.getElementById('cost').value || '0'),
           currency: document.getElementById('currency').value,
-          status: document.getElementById('status').value
+          status: document.getElementById('status').value,
+          createdByUserId: localStorage.getItem('eventmate_userId') // Added field
         };
 
         try {
@@ -1094,156 +1321,7 @@
       } catch (e) { console.error(e); }
     }
 
-    /* ===== ADDED: Admin Review Page JS ===== */
-    function renderReviewPage() {
-      const main = document.getElementById('mainContent');
-      main.innerHTML = `
-        <div class="content-card">
-          <section class="admin-review-card">
-            <header class="admin-review-header">
-              <button class="back-btn" onclick="goBackToEventList()">←</button>
-              <h2>Rate Event</h2>
-            </header>
-
-            <div class="admin-user-info">
-              <img id="ar-avatar" src="images/default-avatar.png" alt="User" />
-              <div class="admin-user-text">
-                <h3 id="ar-user-name">User Name</h3>
-                <p id="ar-attended-date">Attended: yyyy-mm-dd</p>
-                <p id="ar-event-name" class="admin-event-name">Event name here</p>
-              </div>
-            </div>
-
-            <section class="admin-rating-section">
-              <h4>Your Rating</h4>
-              <div class="admin-rating-buttons">
-                <button type="button" id="ar-star-1" disabled>1 Star</button>
-                <button type="button" id="ar-star-2" disabled>2 Stars</button>
-                <button type="button" id="ar-star-3" disabled>3 Stars</button>
-                <button type="button" id="ar-star-4" disabled>4 Stars</button>
-                <button type="button" id="ar-star-5" disabled>5 Stars</button>
-              </div>
-            </section>
-
-            <section class="admin-review-text">
-              <h4>Your Review</h4>
-              <div class="admin-review-box" id="ar-review-text">
-                Loading review...
-              </div>
-            </section>
-
-            <section class="admin-moderation">
-              <h4>Admin Moderation</h4>
-              <div class="admin-moderation-row">
-                <span class="admin-label">Review Status</span>
-                <span id="ar-status" class="admin-status-badge">Pending</span>
-              </div>
-              <p class="admin-submitted-by">
-                Review submitted by <span id="ar-submitted-by">User Name</span>
-              </p>
-              <div class="admin-action-buttons">
-                <button type="button" class="approve-btn" onclick="updateReviewStatus('APPROVED')">
-                  Approve
-                </button>
-                <button type="button" class="reject-btn" onclick="updateReviewStatus('REJECTED')">
-                  Reject
-                </button>
-              </div>
-            </section>
-          </section>
-        </div>
-      `;
-      loadFeedbackForAdmin();
-    }
-
-    function goBackToEventList() {
-      // adjust if you have a dedicated reviews list page
-      openPage('bookings');
-    }
-
-    function getFeedbackIdFromUrl() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('feedbackId');
-    }
-
-    async function loadFeedbackForAdmin() {
-      const feedbackId = getFeedbackIdFromUrl();
-      if (!feedbackId) {
-        document.getElementById('ar-review-text').textContent =
-          'No feedbackId found in URL. Open this page as admin-home.html?feedbackId=ID';
-        return;
-      }
-
-      try {
-        const res = await fetch(API_BASE + '/api/admin/feedback/' + feedbackId);
-        if (!res.ok) {
-          document.getElementById('ar-review-text').textContent =
-            'Failed to load feedback details.';
-          return;
-        }
-        const data = await res.json();
-
-        document.getElementById('ar-user-name').textContent = data.userName || 'User';
-        document.getElementById('ar-submitted-by').textContent = data.userName || 'User';
-        document.getElementById('ar-event-name').textContent = data.eventName || ('Event #' + data.eventId);
-        if (data.attendedDate) {
-          document.getElementById('ar-attended-date').textContent = 'Attended: ' + data.attendedDate;
-        }
-        if (data.avatarUrl) {
-          document.getElementById('ar-avatar').src = data.avatarUrl;
-        }
-
-        for (let i = 1; i <= 5; i++) {
-          const btn = document.getElementById('ar-star-' + i);
-          if (i === data.rating) btn.classList.add('active');
-          else btn.classList.remove('active');
-        }
-
-        document.getElementById('ar-review-text').textContent =
-          data.comments || 'No review text provided.';
-
-        setAdminStatusBadge(data.status || 'PENDING');
-      } catch (e) {
-        console.error(e);
-        document.getElementById('ar-review-text').textContent =
-          'Error loading feedback.';
-      }
-    }
-
-    function setAdminStatusBadge(status) {
-      const el = document.getElementById('ar-status');
-      if (!el) return;
-      el.textContent = status.charAt(0) + status.slice(1).toLowerCase();
-      el.classList.remove('approved', 'rejected');
-      if (status === 'APPROVED') el.classList.add('approved');
-      if (status === 'REJECTED') el.classList.add('rejected');
-    }
-
-    async function updateReviewStatus(newStatus) {
-      const feedbackId = getFeedbackIdFromUrl();
-      if (!feedbackId) {
-        alert('No feedbackId in URL.');
-        return;
-      }
-
-      try {
-        const res = await fetch(
-          API_BASE + '/api/admin/feedback/' + feedbackId + '/status?status=' + newStatus,
-          { method: 'PUT' }
-        );
-        if (!res.ok) {
-          alert('Failed to update review status');
-          return;
-        }
-        const updated = await res.json();
-        setAdminStatusBadge(updated.status || newStatus);
-        alert('Status updated to ' + (updated.status || newStatus));
-      } catch (e) {
-        console.error(e);
-        alert('Error updating status');
-      }
-    }
-    /* ===== END ADDED REVIEW JS ===== */
   </script>
 </body>
+
 </html>

@@ -275,6 +275,98 @@
       }
     }
   </style>
+  /* Modal Styles */
+  .modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  }
+  .rate-card {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  width: 400px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  }
+  .rate-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  }
+  .rate-back-btn {
+  background: none; border: none; font-size: 20px; cursor: pointer; color: #333;
+  }
+  .rate-title {
+  flex: 1; font-weight: bold; font-size: 18px; color: #333;
+  }
+  .user-profile-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  }
+  .user-avatar-u {
+  width: 60px; height: 60px; border-radius: 50%; object-fit: cover;
+  }
+  .user-info-text {
+  text-align: left;
+  }
+  .user-name-u {
+  font-weight: bold; font-size: 16px; color: #04345c; margin: 0;
+  }
+  .attended-date {
+  font-size: 12px; color: #6b7280; margin: 0;
+  }
+  .rating-wrapper {
+  margin-bottom: 20px;
+  }
+  .rating-label {
+  font-weight: bold; font-size: 14px; margin-bottom: 10px; display: block; color: #333; text-align: left;
+  }
+  .star-buttons {
+  display: flex; gap: 8px; justify-content: center;
+  }
+  .star-btn {
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.2s;
+  }
+  .star-btn.active {
+  background: #00a8ff; color: white; border-color: #00a8ff;
+  }
+  .review-area {
+  width: 100%;
+  height: 100px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  background: #f8f9fa;
+  resize: none;
+  font-family: inherit;
+  margin-bottom: 20px;
+  }
+  .submit-review-btn {
+  background: #00a8ff; color: white; border: none; padding: 12px; width: 100%; border-radius: 25px; font-weight: bold;
+  cursor: pointer;
+  }
+  .submit-review-btn:hover { background: #008fd4; }
+  .close-modal-btn {
+  position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color:
+  #999;
+  }
+  </style>
 </head>
 
 <body>
@@ -320,6 +412,48 @@
       </div>
     </div>
   </main>
+  </div>
+
+
+  <!-- Rate Event Modal -->
+  <div class="modal-overlay" id="rateModal">
+    <div class="rate-card">
+      <button class="close-modal-btn" onclick="closeRateModal()">&times;</button>
+
+      <div class="rate-header">
+        <button class="rate-back-btn" onclick="closeRateModal()">←</button>
+        <div class="rate-title">Rate Event</div>
+      </div>
+
+      <!-- User Info Section -->
+      <div class="user-profile-section">
+        <img src="images/avatars/avatar1.png" alt="User" class="user-avatar-u" id="rateUserAvatar">
+        <div class="user-info-text">
+          <h3 class="user-name-u" id="rateUserName">User Name</h3>
+          <p class="attended-date" id="rateAttendedDate">Attended: 2024-01-01</p>
+        </div>
+      </div>
+
+      <div class="rating-wrapper">
+        <label class="rating-label">Your Rating</label>
+        <div class="star-buttons">
+          <button class="star-btn" onclick="selectStar(1)">1 Star</button>
+          <button class="star-btn" onclick="selectStar(2)">2 Stars</button>
+          <button class="star-btn" onclick="selectStar(3)">3 Stars</button>
+          <button class="star-btn" onclick="selectStar(4)">4 Stars</button>
+          <button class="star-btn" onclick="selectStar(5)">5 Stars</button>
+        </div>
+      </div>
+
+      <div class="rating-wrapper">
+        <label class="rating-label">Your Review</label>
+        <textarea class="review-area" id="reviewComment" placeholder="Share your thoughts about the event"></textarea>
+      </div>
+
+      <button class="submit-review-btn" onclick="submitReview()">Submit Review</button>
+
+      <!-- Admin status placeholder if needed -->
+    </div>
   </div>
 
   <!-- floating emojis script -->
@@ -498,6 +632,20 @@
           });
 
           actions.appendChild(downloadBtn);
+
+          if (b.status !== 'CANCELLED') {
+            const rateBtn = document.createElement('button');
+            rateBtn.className = 'download-btn';
+            rateBtn.textContent = 'Rate';
+            rateBtn.style.background = '#6c5ce7'; // Purple-ish
+            rateBtn.style.marginTop = '6px';
+            rateBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              rateEvent(b);
+            });
+            actions.appendChild(rateBtn);
+          }
+
           actions.appendChild(deleteBtn);
 
           card.appendChild(main);
@@ -666,7 +814,105 @@
       }
     }
 
+    // Rate functionality
+    let currentRateBooking = null;
+    let currentRating = 0;
+
+    // Add Rate button and helper functions
+
+    function closeRateModal() {
+      document.getElementById('rateModal').style.display = 'none';
+      currentRateBooking = null;
+      currentRating = 0;
+      document.getElementById('reviewComment').value = '';
+      document.querySelectorAll('.star-btn').forEach(b => b.classList.remove('active'));
+    }
+
+    function selectStar(n) {
+      currentRating = n;
+      document.querySelectorAll('.star-btn').forEach((b, idx) => {
+        if (idx < n) b.classList.add('active');
+        else b.classList.remove('active');
+      });
+    }
+
+    async function rateEvent(booking) {
+      currentRateBooking = booking;
+      const userId = localStorage.getItem('eventmate_userId');
+      if (!userId) return;
+
+      // Fetch user details for UI
+      try {
+        const res = await fetch(API_BASE + '/api/users/' + userId);
+        if (res.ok) {
+          const data = await res.json();
+          const u = data.user || data; // handle wrapped response
+          document.getElementById('rateUserName').textContent = u.fullName || 'User';
+          document.getElementById('rateUserAvatar').src = u.avatarUrl || 'images/avatars/avatar1.png';
+        }
+      } catch (e) { console.error(e); }
+
+      const dt = booking.eventDateTime ? booking.eventDateTime.split('T')[0] : 'Unknown';
+      document.getElementById('rateAttendedDate').textContent = 'Attended: ' + dt;
+
+      document.getElementById('rateModal').style.display = 'flex';
+    }
+
+    async function submitReview() {
+      if (!currentRateBooking || currentRating === 0) {
+        alert('Please select a rating');
+        return;
+      }
+
+      const userId = localStorage.getItem('eventmate_userId');
+      const comments = document.getElementById('reviewComment').value;
+      const dt = currentRateBooking.eventDateTime ? currentRateBooking.eventDateTime.split('T')[0] : new Date().toISOString().split('T')[0];
+
+      try {
+        const res = await fetch(API_BASE + '/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventId: currentRateBooking.eventId,
+            userId: userId,
+            rating: currentRating,
+            comments: comments,
+            attendedDate: dt
+          })
+        });
+
+        if (res.ok) {
+          alert('Review submitted successfully! Pending admin approval.');
+          closeRateModal();
+        } else if (res.status === 409) {
+          alert('You have already submitted a review for this event.');
+        } else {
+          alert('Failed to submit review.');
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Error submitting review');
+      }
+    }
+
+    // Existing functions...
+
     loadEvents().then(() => loadMyBookings());
+
+    // Update loadMyBookings to include Rate button
+    const originalLoadMyBookings = loadMyBookings;
+    loadMyBookings = async function () {
+      await originalLoadMyBookings(); // let it render
+
+      // Now inject Rate buttons because I didn't want to rewrite the massive function
+      // Just iterating existing cards and appending button is risky if they aren't identifiable.
+      // Actually, it's better to REPLACE the function or modify it properly.
+      // But to save tokens/complexity, I'll rewrite the loop part via replacement or just accept rewriting the function.
+      // Let's rewrite the loop part in the original function.
+    }
+
+    // Rerunning to ensure correct overload
+
   </script>
 </body>
 
