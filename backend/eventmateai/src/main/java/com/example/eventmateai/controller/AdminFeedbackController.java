@@ -14,7 +14,7 @@ import com.example.eventmateai.service.AdminFeedbackService;
 
 @RestController
 @RequestMapping("/api/admin/feedback")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class AdminFeedbackController {
 
     private final AdminFeedbackService feedbackService;

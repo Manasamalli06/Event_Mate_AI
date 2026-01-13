@@ -899,17 +899,7 @@
 
     loadEvents().then(() => loadMyBookings());
 
-    // Update loadMyBookings to include Rate button
-    const originalLoadMyBookings = loadMyBookings;
-    loadMyBookings = async function () {
-      await originalLoadMyBookings(); // let it render
 
-      // Now inject Rate buttons because I didn't want to rewrite the massive function
-      // Just iterating existing cards and appending button is risky if they aren't identifiable.
-      // Actually, it's better to REPLACE the function or modify it properly.
-      // But to save tokens/complexity, I'll rewrite the loop part via replacement or just accept rewriting the function.
-      // Let's rewrite the loop part in the original function.
-    }
 
     // Rerunning to ensure correct overload
 

@@ -15,7 +15,7 @@ import com.example.eventmateai.repository.FeedbackRepository;
 
 @RestController
 @RequestMapping("/api/feedback")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class FeedbackController {
 
     private final FeedbackRepository feedbackRepository;

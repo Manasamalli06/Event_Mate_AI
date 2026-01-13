@@ -1306,6 +1306,7 @@
         });
         if (!isHover) {
           scoreText.textContent = `${rating} / 5`;
+          document.getElementById('starRating').setAttribute('data-rating', rating);
         }
       }
 
@@ -1361,29 +1362,78 @@
       }
     }
 
-    function submitFeedback() {
+    async function submitFeedback() {
       const btn = document.querySelector('.btn-submit-feedback');
       if (!btn) return;
+
+      const eventId = document.getElementById('feedbackEventSelect').value;
+      const rating = document.getElementById('starRating').getAttribute('data-rating');
+      const comments = document.querySelector('.form-textarea').value;
+      const userId = localStorage.getItem('eventmate_userId');
+
+      if (!eventId) {
+        alert('Please select an event.');
+        return;
+      }
+      if (!rating || rating === '0') {
+        alert('Please provide a rating.');
+        return;
+      }
+      if (!userId) {
+        alert('You must be logged in.');
+        return;
+      }
+
       const originalText = btn.innerHTML;
       btn.innerHTML = 'Submitting...';
       btn.disabled = true;
 
-      // Emulate network request
-      setTimeout(() => {
-        btn.innerHTML = 'Submitted Successfully! ✓';
-        btn.style.background = '#28a745';
-        setTimeout(() => {
+      try {
+        const res = await fetch(API_BASE + '/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventId: Number(eventId),
+            userId: Number(userId),
+            rating: Number(rating),
+            comments: comments,
+            attendedDate: new Date().toISOString().split('T')[0] // Default to today
+          })
+        });
+
+        if (res.ok) {
+          btn.innerHTML = 'Submitted Successfully! ✓';
+          btn.style.background = '#28a745';
+          setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.background = '';
+            btn.disabled = false;
+            // Clear form
+            document.querySelector('textarea').value = '';
+            // Reset stars (visuals need reset manually or reload, simplistic reset here)
+            document.getElementById('starRating').setAttribute('data-rating', '0');
+            document.getElementById('ratingScore').textContent = '0 / 5';
+            document.querySelectorAll('#starRating span').forEach(s => {
+              s.classList.remove('star-filled');
+              s.classList.add('star-empty');
+            });
+            // Ideally trigger refresh or something
+          }, 3000);
+        } else if (res.status === 409) {
+          alert('You have already submitted feedback for this event.');
           btn.innerHTML = originalText;
-          btn.style.background = ''; // reset
           btn.disabled = false;
-          // clear form?
-          document.querySelector('textarea').value = '';
-          // reset stars
-          const stars = document.querySelectorAll('#starRating span[data-val]');
-          // we'd need to reset currentRating variable but it's local scope. 
-          // That's fine, we reload page or just leave it.
-        }, 3000);
-      }, 1500);
+        } else {
+          alert('Failed to submit feedback.');
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
+      } catch (err) {
+        console.error('Error submitting feedback:', err);
+        alert('Error connecting to server.');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
     }
 
     document.addEventListener('DOMContentLoaded', initHeroSlider);
