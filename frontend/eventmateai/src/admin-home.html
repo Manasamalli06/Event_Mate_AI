@@ -739,6 +739,112 @@
       }
     }
 
+    function renderVerifyPage() {
+      const main = document.getElementById('mainContent');
+      main.innerHTML = `
+         <div class="content-card">
+            <h2 class="content-title">Verify Ticket</h2>
+            <p class="content-subtitle">Enter Booking ID from the ticket QR code to verify and admit attendees.</p>
+
+            <div style="max-width:400px; margin-top:20px;">
+               <div style="display:flex; gap:10px;">
+                  <input type="number" id="verifyBookingId" placeholder="Enter Booking ID" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                  <button id="btnCheckTicket" style="background:#00a8ff; color:#fff; border:none; padding:0 20px; border-radius:8px; cursor:pointer; font-weight:600;">Check</button>
+               </div>
+
+               <div id="verifyResult" style="margin-top:20px; display:none;">
+                   <div id="verifyCard" style="padding:20px; border-radius:12px; border:1px solid #eee; background:#f9f9f9;">
+                      <h3 id="vEventTitle" style="margin-top:0; color:#04345c;">Event Title</h3>
+                      <div style="margin-bottom:8px;"><strong>Booking ID:</strong> <span id="vBid"></span></div>
+                      <div style="margin-bottom:8px;"><strong>User ID:</strong> <span id="vUid"></span></div>
+                      <div style="margin-bottom:8px;"><strong>Status:</strong> <span id="vStatus" style="font-weight:bold;"></span></div>
+                      <div style="margin-bottom:8px;"><strong>Seats:</strong> <span id="vSeats"></span></div>
+
+                      <div id="vActions" style="margin-top:20px;">
+                         <button id="btnAdmit" style="width:100%; padding:12px; background:#4caf50; color:white; border:none; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer;">ADMIT (CHECK-IN)</button>
+                      </div>
+                   </div>
+               </div>
+            </div>
+         </div>
+       `;
+
+      document.getElementById('btnCheckTicket').onclick = checkTicket;
+    }
+
+    async function checkTicket() {
+      const id = document.getElementById('verifyBookingId').value;
+      if (!id) { alert('Enter ID'); return; }
+
+      const resDiv = document.getElementById('verifyResult');
+      resDiv.style.display = 'none';
+
+      try {
+        const res = await fetch(API_BASE + '/api/bookings');
+        if (!res.ok) throw new Error('Failed to fetch bookings');
+        const all = await res.json();
+        const booking = all.find(b => b.id == id);
+
+        if (!booking) {
+          alert('Booking ID not found!');
+          return;
+        }
+
+        const evRes = await fetch(API_BASE + '/api/events');
+        const events = await evRes.json();
+        const event = events.find(e => e.id == booking.eventId);
+
+        resDiv.style.display = 'block';
+        document.getElementById('vEventTitle').textContent = event ? event.title : 'Unknown Event';
+        document.getElementById('vBid').textContent = booking.id;
+        document.getElementById('vUid').textContent = booking.userId;
+        document.getElementById('vStatus').textContent = booking.status;
+        document.getElementById('vSeats').textContent = booking.seats || 'None';
+
+        const vStatus = document.getElementById('vStatus');
+        if (booking.status === 'CHECKED_IN') {
+          vStatus.style.color = 'green';
+          document.getElementById('btnAdmit').disabled = true;
+          document.getElementById('btnAdmit').textContent = 'ALREADY CHECKED IN';
+          document.getElementById('btnAdmit').style.background = '#ccc';
+        } else if (booking.status === 'CANCELLED') {
+          vStatus.style.color = 'red';
+          document.getElementById('btnAdmit').disabled = true;
+          document.getElementById('btnAdmit').textContent = 'TICKET CANCELLED';
+          document.getElementById('btnAdmit').style.background = '#ef5350';
+        } else {
+          vStatus.style.color = 'orange';
+          document.getElementById('btnAdmit').disabled = false;
+          document.getElementById('btnAdmit').textContent = 'ADMIT (CHECK-IN)';
+          document.getElementById('btnAdmit').style.background = '#4caf50';
+          document.getElementById('btnAdmit').onclick = () => admitUser(booking.id);
+        }
+
+      } catch (e) {
+        console.error(e);
+        alert('Error validating ticket');
+      }
+    }
+
+    async function admitUser(id) {
+      try {
+        const res = await fetch(API_BASE + '/api/bookings/' + id + '/status', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'CHECKED_IN' })
+        });
+        if (res.ok) {
+          alert('Success! User checked in.');
+          checkTicket(); // refresh
+        } else {
+          alert('Failed to update status');
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Error');
+      }
+    }
+
     let reviewCache = [];
 
     async function renderReviewPage() {
