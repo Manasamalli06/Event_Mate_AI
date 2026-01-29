@@ -509,10 +509,37 @@
           return;
         }
         select.innerHTML = '<option value="">Select an event</option>';
+        const now = new Date();
+
         events.forEach(e => {
           const opt = document.createElement('option');
           opt.value = e.id;
-          opt.textContent = e.title;
+
+          let eventDate = null;
+          let isCompleted = false;
+
+          let compareDate = null;
+          if (e.endDate) {
+            // If end date exists, use it for completion check
+            compareDate = new Date(e.endDate);
+            // Set to end of day just in case
+            compareDate.setHours(23, 59, 59, 999);
+          } else if (e.dateTime) {
+            // Fallback to start date
+            compareDate = new Date(e.dateTime);
+          }
+
+          if (compareDate && compareDate < now) {
+            isCompleted = true;
+          }
+
+          if (isCompleted) {
+            opt.textContent = e.title + ' (Completed)';
+            opt.disabled = true;
+          } else {
+            opt.textContent = e.title;
+          }
+
           select.appendChild(opt);
         });
 

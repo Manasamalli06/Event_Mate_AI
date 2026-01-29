@@ -767,24 +767,94 @@
         return;
       }
 
+      const now = new Date();
+      // Normalize today to midnight for comparison
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
       events.forEach(ev => {
         const item = document.createElement('div');
         item.className = 'event-item';
 
-        const date = ev.dateTime ? new Date(ev.dateTime).toLocaleDateString() : 'Date TBD';
+        let dateStr = 'Date TBD';
+        let status = 'Upcoming'; // Default
+        let eventDate = null;
+
+        if (ev.dateTime) {
+          eventDate = new Date(ev.dateTime);
+          dateStr = eventDate.toLocaleDateString();
+
+          let endDate = null;
+          if (ev.endDate) {
+            endDate = new Date(ev.endDate);
+            dateStr += ' - ' + endDate.toLocaleDateString();
+          }
+
+          // Compare dates (ignoring time for "Today")
+          const sDate = new Date(eventDate);
+          sDate.setHours(0, 0, 0, 0);
+
+          let eDate = null;
+          if (endDate) {
+            eDate = new Date(endDate);
+            eDate.setHours(23, 59, 59, 999);
+          } else {
+            eDate = new Date(sDate);
+            eDate.setHours(23, 59, 59, 999);
+          }
+
+          if (eDate < today) {
+            status = 'Completed';
+          } else if (today >= sDate && today <= eDate) {
+            status = 'Going';
+          } else {
+            // If it's not completed and not going, it must be future or something else
+            // but we need to strictly check if it's future relative to today
+            if (sDate > today) {
+              status = 'Upcoming';
+            } else {
+              // Technically if we are here, it might be that sDate < today but eDate < today was false?
+              // No, if sDate < today and eDate < today, it is completed.
+              // If sDate <= today <= eDate, it is Going.
+              // So sDate > today is upcoming. 
+              status = 'Upcoming';
+            }
+          }
+        }
+
+        // Apply styles based on status
+        let statusColor = '#00a8ff'; // Blue for Upcoming
+        if (status === 'Completed') statusColor = '#999';
+        if (status === 'Going') statusColor = '#28a745'; // Green
 
         item.innerHTML = `
           <div class="event-main">
             <span class="event-name">${ev.title}</span>
             <span class="event-meta">
-              ${date} • ${ev.venue || 'TBD'}
+              ${dateStr} • ${ev.venue || 'TBD'}
             </span>
           </div>
-          <span class="event-badge">${ev.category || 'Event'}</span>
+          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+             <span class="event-badge">${ev.category || 'Event'}</span>
+             <span style="font-size:11px; font-weight:bold; color:${statusColor}; border:1px solid ${statusColor}; padding:2px 6px; border-radius:4px;">
+               ${status.toUpperCase()}
+             </span>
+          </div>
         `;
 
-        // click to toggle details
-        item.addEventListener('click', () => toggleEventDetails(ev, item));
+        if (status === 'Going') {
+          // click to open details
+          item.addEventListener('click', () => toggleEventDetails(ev, item));
+          item.style.cursor = 'pointer';
+        } else {
+          // restrict access
+          item.style.cursor = 'not-allowed';
+          item.style.opacity = '0.7';
+          item.addEventListener('click', () => {
+            alert(`This event is ${status} and cannot be booked/opened.`);
+          });
+        }
+
         listEl.appendChild(item);
       });
     }

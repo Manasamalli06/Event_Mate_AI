@@ -82,6 +82,16 @@ public class Event {
         this.dateTime = dateTime;
     }
 
+    private LocalDateTime endDate;
+
+    public LocalDateTime getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDateTime endDate) {
+        this.endDate = endDate;
+    }
+
     public String getVenue() {
         return venue;
     }

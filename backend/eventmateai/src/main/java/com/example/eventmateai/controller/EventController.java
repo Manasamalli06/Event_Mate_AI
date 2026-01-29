@@ -36,14 +36,21 @@ public class EventController {
         this.bookingRepository = bookingRepository;
     }
 
+    // 2) Get all events (public)
+    @GetMapping
+    public List<Event> getAllEvents() {
+        return eventRepository.findAll();
+    }
+
     // 1) Create new event (admin)
     @PostMapping("/create")
     public Event createEvent(@RequestBody CreateEventRequest req) {
         Event e = new Event();
         e.setTitle(req.getTitle());
-        if (req.getDateTime() != null && !req.getDateTime().isEmpty()) {
-            e.setDateTime(LocalDateTime.parse(req.getDateTime()));
-        }
+        e.setDateTime(req.getDateTime() != null && !req.getDateTime().isEmpty() ? LocalDateTime.parse(req.getDateTime())
+                : null);
+        e.setEndDate(
+                req.getEndDate() != null && !req.getEndDate().isEmpty() ? LocalDateTime.parse(req.getEndDate()) : null);
         e.setVenue(req.getVenue());
         e.setCategory(req.getCategory());
         e.setDescription(req.getDescription());
@@ -58,6 +65,16 @@ public class EventController {
 
     // ...
 
+    // 3) Delete event
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEvent(@PathVariable Long id) {
+        if (!eventRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        eventRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
     // 1b) Update existing event
     @PutMapping("/{id}")
     public ResponseEntity<Event> updateEvent(
@@ -70,6 +87,7 @@ public class EventController {
                     existing.setDescription(updated.getDescription());
                     existing.setCategory(updated.getCategory());
                     existing.setDateTime(updated.getDateTime());
+                    existing.setEndDate(updated.getEndDate());
                     existing.setAvailableSeats(updated.getAvailableSeats());
                     existing.setCostPerTicket(updated.getCostPerTicket());
                     existing.setCurrency(updated.getCurrency());
@@ -82,61 +100,15 @@ public class EventController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // 2) Get all events (for user Event List)
-    @GetMapping
-    public List<Event> getAllEvents() {
-        return eventRepository.findAll();
-    }
+    // ... (rest of methods)
 
-    // 3) Get single event by id (for Event Details page)
-    @GetMapping("/{id}")
-    public Event getEventById(@PathVariable Long id) {
-        return eventRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Event not found: " + id));
-    }
-
-    // 3b) Get booked seats for an event (for seat availability)
-    // GET /api/events/{id}/seats -> { "bookedSeats": ["A1","A2", ...] }
-    @GetMapping("/{id}/seats")
-    public Map<String, List<String>> getBookedSeatsForEvent(@PathVariable Long id) {
-        List<Booking> bookings = bookingRepository.findByEventId(id);
-        List<String> bookedSeats = bookings.stream()
-                .filter(b -> b.getSeats() != null)
-                .flatMap(b -> Arrays.stream(b.getSeats().split(",")))
-                .distinct()
-                .collect(Collectors.toList());
-        return Map.of("bookedSeats", bookedSeats);
-    }
-
-    // 4) Delete event
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEvent(@PathVariable Long id) {
-        if (!eventRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        eventRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    // 5) Generate description with AI
-    @PostMapping("/generate-description")
-    public Map<String, String> generateDescriptionWithAI(@RequestBody GenerateDescriptionRequest req) {
-        String title = req.getTitle() != null ? req.getTitle() : "this event";
-        String category = req.getCategory() != null ? req.getCategory().toLowerCase() : "general";
-        String venue = req.getVenue() != null ? req.getVenue() : "the selected venue";
-
-        // Simple AI-like generation (can be replaced with actual AI API call)
-        String description = "Join us for '" + title + "', an exciting " + category +
-                " event taking place at " + venue + ". This promises to be an unforgettable experience " +
-                "filled with engaging activities, networking opportunities, and memorable moments for all attendees.";
-
-        return Map.of("description", description);
-    }
+    // ... (GenerateDescriptionRequest)
 
     // DTO for create event request
     public static class CreateEventRequest {
         private String title;
         private String dateTime;
+        private String endDate;
         private String venue;
         private String category;
         private String description;
@@ -162,6 +134,14 @@ public class EventController {
 
         public void setDateTime(String dateTime) {
             this.dateTime = dateTime;
+        }
+
+        public String getEndDate() {
+            return endDate;
+        }
+
+        public void setEndDate(String endDate) {
+            this.endDate = endDate;
         }
 
         public String getVenue() {

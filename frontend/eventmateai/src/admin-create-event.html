@@ -9,15 +9,27 @@
       <div class="form-grid">
         <div class="form-row-full">
           <label for="title">Event Title</label>
-          <input type="text" id="title" name="title" placeholder="Enter event title" />
+          <input type="text" id="title" name="title" placeholder="Enter event title" required />
         </div>
 
         <div class="form-row-full">
-          <label for="date">Date &amp; Time</label>
+          <label>Start Date &amp; Time</label>
           <div style="display:flex; gap:8px;">
-            <input type="date" id="date" name="date" />
-            <input type="time" id="time" name="time" />
+            <input type="date" id="date" name="date" required />
+            <input type="time" id="time" name="time" required />
             <select id="ampm" name="ampm">
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row-full">
+          <label>End Date &amp; Time</label>
+          <div style="display:flex; gap:8px;">
+            <input type="date" id="endDate" name="endDate" required />
+            <input type="time" id="endTime" name="endTime" required />
+            <select id="endAmpm" name="endAmpm">
               <option value="AM">AM</option>
               <option value="PM">PM</option>
             </select>
@@ -26,12 +38,12 @@
 
         <div>
           <label for="venue">Venue</label>
-          <input type="text" id="venue" name="venue" placeholder="Event location" />
+          <input type="text" id="venue" name="venue" placeholder="Event location" required />
         </div>
 
         <div>
           <label for="category">Category</label>
-          <select id="category" name="category">
+          <select id="category" name="category" required>
             <option value="">Select category</option>
             <option>Music</option>
             <option>Tech</option>
@@ -66,14 +78,14 @@
         <div class="form-row-full">
           <label>Event Image</label>
           <p class="ai-hint">You can paste an image URL or choose a file from your computer.</p>
-          <input type="text" id="imageUrl" name="imageUrl"
-                 placeholder="Image URL (optional)" style="margin-bottom:8px;" />
+          <input type="text" id="imageUrl" name="imageUrl" placeholder="Image URL (optional)"
+            style="margin-bottom:8px;" />
           <input type="file" id="imageFile" name="imageFile" accept="image/*" />
         </div>
 
         <div>
           <label for="seats">Available Seats</label>
-          <input type="number" id="seats" name="seats" min="0" placeholder="e.g. 100" />
+          <input type="number" id="seats" name="seats" min="0" placeholder="e.g. 100" required />
         </div>
 
         <div>
@@ -85,7 +97,7 @@
               <option value="EUR">€ (EUR)</option>
               <option value="GBP">£ (GBP)</option>
             </select>
-            <input type="number" id="cost" name="cost" min="0" step="0.01" placeholder="e.g. 499" />
+            <input type="number" id="cost" name="cost" min="0" step="0.01" placeholder="e.g. 499" required />
           </div>
         </div>
       </div>
@@ -150,6 +162,7 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      // Start Date Logic
       const date = document.getElementById('date').value;
       const time = document.getElementById('time').value;
       const ampm = document.getElementById('ampm').value;
@@ -161,8 +174,22 @@
         if (ampm === 'AM' && hh === 12) hh = 0;
         finalTime = String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
       }
-
       const dateTime = (date && finalTime) ? (date + 'T' + finalTime) : null;
+
+      // End Date Logic
+      const endDateVal = document.getElementById('endDate').value;
+      const endTimeVal = document.getElementById('endTime').value;
+      const endAmpm = document.getElementById('endAmpm').value;
+
+      let finalEndTime = endTimeVal;
+      if (endTimeVal) {
+        let [hh, mm] = endTimeVal.split(':').map(Number);
+        if (endAmpm === 'PM' && hh < 12) hh += 12;
+        if (endAmpm === 'AM' && hh === 12) hh = 0;
+        finalEndTime = String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+      }
+      const endDateTime = (endDateVal && finalEndTime) ? (endDateVal + 'T' + finalEndTime) : null;
+
 
       const fileInput = document.getElementById('imageFile');
       const chosenFileName = fileInput && fileInput.files[0] ? fileInput.files[0].name : '';
@@ -170,6 +197,7 @@
       const body = {
         title: document.getElementById('title').value,
         dateTime: dateTime,
+        endDate: endDateTime,
         venue: document.getElementById('venue').value,
         category: document.getElementById('category').value,
         status: document.getElementById('status').value,
