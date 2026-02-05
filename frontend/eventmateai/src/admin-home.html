@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Home - Event Mate AI</title>
+  <link rel="stylesheet" href="dashboard.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #9be7ff 0%, #00c6ff 35%, #00e1ff 70%, #c3f5ff 100%);
+      background-attachment: fixed;
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .app-header {
+      height: 56px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(90deg, #04345c, #00a8ff);
+      color: #ffffff;
+    }
+
+    .app-main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* LEFT SIDEBAR */
+    .sidebar {
+      width: 220px;
+      background: #ffffff;
+      border-right: 1px solid #dde6f2;
+      padding: 16px 10px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #5b7285;
+      margin-bottom: 8px;
+      padding: 0 6px;
+    }
+
+    .nav-btn {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: left;
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      color: #04345c;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-btn span.icon {
+      width: 20px;
+      text-align: center;
+    }
+
+    .nav-btn.active,
+    .nav-btn:hover {
+      background: #e6f6ff;
+      color: #00a8ff;
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      flex: 1;
+      padding: 24px 28px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    .content-card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 8px 22px rgba(4, 52, 92, 0.08);
+      padding: 20px 24px;
+    }
+
+    .content-title {
+      font-size: 20px;
+      color: #04345c;
+      margin: 0 0 6px;
+    }
+
+    .content-subtitle {
+      font-size: 14px;
+      color: #5b7285;
+      margin: 0 0 16px;
+    }
+
+    .loading-text {
+      font-size: 14px;
+      color: #5b7285;
+      margin-bottom: 8px;
+    }
+
+    .error-text {
+      font-size: 14px;
+      color: #e03a3c;
+      margin-bottom: 8px;
+    }
+
+    /* Slider styles (inside card) */
+    .hero-slider {
+      position: relative;
+      width: 100%;
+      max-width: 960px;
+      margin: 10px auto 24px;
+      height: 420px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    .hero-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+
+    .hero-slide.active {
+      opacity: 1;
+    }
+
+    .hero-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #e6dbe7;
+    }
+
+    /* ===== ADDED: Admin Review Card styles ===== */
+    .admin-review-card {
+      max-width: 420px;
+      margin: 0 auto;
+      padding: 24px 20px 32px;
+      border-radius: 18px;
+      background: #f9fafb;
+      box-shadow: 0 16px 35px rgba(15, 23, 42, 0.08);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .admin-review-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .admin-review-header h2 {
+      margin: 0 auto;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .back-btn {
+      border: none;
+      background: transparent;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .admin-user-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .admin-user-info img {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .admin-user-text h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .admin-user-text p {
+      margin: 2px 0;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .admin-event-name {
+      font-size: 12px;
+      color: #111827;
+    }
+
+    .admin-rating-section h4,
+    .admin-review-text h4,
+    .admin-moderation h4 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .admin-rating-section {
+      margin-bottom: 18px;
+    }
+
+    .admin-rating-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .admin-rating-buttons button {
+      border-radius: 18px;
+      padding: 6px 12px;
+      border: 1px solid #d1d5db;
+      background-color: #fff;
+      font-size: 12px;
+      cursor: default;
+    }
+
+    .admin-rating-buttons button.active {
+      background-color: #00a8ff;
+      color: #fff;
+      border-color: #00a8ff;
+    }
+
+    .admin-review-text {
+      margin-bottom: 24px;
+    }
+
+    .admin-review-box {
+      min-height: 90px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background-color: #e5f3fb;
+      font-size: 13px;
+      color: #374151;
+      white-space: pre-wrap;
+    }
+
+    .admin-moderation {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 16px;
+    }
+
+    .admin-moderation-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .admin-label {
+      color: #6b7280;
+    }
+
+    .admin-status-badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    .admin-status-badge.approved {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+
+    .admin-status-badge.rejected {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+
+    .admin-submitted-by {
+      margin: 6px 0 14px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .admin-submitted-by span {
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .admin-action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .approve-btn,
+    .reject-btn {
+      flex: 1;
+      border-radius: 999px;
+      padding: 8px 0;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .approve-btn {
+      background-color: #22c55e;
+      color: #fff;
+    }
+
+    .reject-btn {
+      background-color: #f97373;
+      color: #fff;
+    }
+
+    /* Review List Styles */
+    .review-list-container {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .review-list-item {
+      display: flex;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .review-list-item:hover {
+      background: #f8fafc;
+    }
+
+    .review-list-item:last-child {
+      border-bottom: none;
+    }
+
+    .r-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 16px;
+    }
+
+    .r-info {
+      flex: 1;
+    }
+
+    .r-name {
+      font-weight: 600;
+      color: #1e293b;
+      font-size: 15px;
+    }
+
+    .r-event {
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .r-rating {
+      margin: 0 20px;
+      color: #f59e0b;
+      font-weight: bold;
+    }
+
+    .r-status {
+      min-width: 80px;
+      text-align: right;
+    }
+
+    /* Review Detail Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .detail-card {
+      background: white;
+      width: 700px;
+      max-width: 90%;
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .detail-sidebar {
+      width: 250px;
+      background: #f8fafc;
+      padding: 30px;
+      border-right: 1px solid #e2e8f0;
+      text-align: center;
+    }
+
+    .detail-avatar-large {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 15px;
+      border: 4px solid white;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .detail-user-name {
+      font-size: 18px;
+      font-weight: bold;
+      color: #1e293b;
+      margin-bottom: 5px;
+    }
+
+    .detail-user-meta {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .detail-main {
+      flex: 1;
+      padding: 30px;
+    }
+
+    .detail-header {
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+
+    .detail-event-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #04345c;
+    }
+
+    .detail-date {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .detail-stars {
+      color: #f59e0b;
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+
+    .detail-comment {
+      background: #f1f5f9;
+      padding: 20px;
+      border-radius: 12px;
+      font-size: 15px;
+      line-height: 1.6;
+      color: #334155;
+      margin-bottom: 30px;
+    }
+
+    .detail-actions {
+      display: flex;
+      gap: 15px;
+    }
+
+    .nav-badge {
+      background: #ff4757;
+      color: white;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-left: auto;
+      display: none;
+      /* hidden by default */
+    }
+
+    /* ===== END ADDED STYLES ===== */
+  </style>
+
+  <script>
+    // Protect Admin Route
+    (function () {
+      const role = localStorage.getItem('eventmate_role');
+      if (!role || role.toLowerCase() !== 'admin') {
+        window.location.href = 'login.html';
+      }
+    })();
+  </script>
+</head>
+
+<body>
+  <!-- floating emojis layer -->
+  <div class="floating-emoji-layer" id="floatingEmojiLayer"></div>
+
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-logo-circle">E</span>
+        <span class="brand-text">EVENTMATE <span class="brand-ai">AI</span></span>
+      </div>
+      <div class="profile-dropdown">
+        <button class="logout-btn" title="Profile" onclick="window.location.href='admin-profile.html'">
+          <div class="logout-icon-circle">👤</div>
+          <span>Profile</span>
+        </button>
+        <div class="dropdown-content">
+          <a href="admin-home.html">Dashboard</a>
+          <a href="admin-profile.html">Edit Profile</a>
+          <a href="javascript:void(0)" onclick="handleLogout()" class="logout-link">Logout</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <!-- LEFT PANEL -->
+      <aside class="sidebar">
+        <div class="sidebar-title">Admin Menu</div>
+
+        <button class="nav-btn active" id="nav-home" onclick="openPage('home')">
+          <span class="icon">🏠</span>
+          <span>Home</span>
+        </button>
+
+        <button class="nav-btn" id="nav-create" onclick="openPage('create')">
+          <span class="icon">➕</span>
+          <span>Create Events</span>
+        </button>
+
+        <button class="nav-btn" id="nav-edit" onclick="openPage('edit')">
+          <span class="icon">✏️</span>
+          <span>Edit Events</span>
+        </button>
+
+        <button class="nav-btn" id="nav-bookings" onclick="openPage('bookings')">
+          <span class="icon">📊</span>
+          <span>Booking Overview</span>
+        </button>
+
+        <button class="nav-btn" id="nav-verify" onclick="openPage('verify')">
+          <span class="icon">✅</span>
+          <span>Verify Ticket</span>
+        </button>
+
+        <!-- ADDED: menu for reviews -->
+        <button class="nav-btn" id="nav-reviews" onclick="openPage('reviews')">
+          <span class="icon">⭐</span>
+          <span>User Reviews</span>
+          <span class="nav-badge" id="reviewBadge">0</span>
+        </button>
+        <!-- END ADDED -->
+      </aside>
+
+      <!-- CENTER CONTENT -->
+      <section class="main-content" id="mainContent">
+        <!-- default home view with slider -->
+        <div class="content-card">
+          <h2 class="content-title">Admin Dashboard</h2>
+          <p class="content-subtitle">
+            For admins to create events, manage tickets and see all bookings.
+          </p>
+          <p class="content-subtitle">
+            Use the menu on the left to manage events and view bookings.
+          </p>
+
+          <!-- slider inside card -->
+          <div class="hero-slider" id="heroSlider">
+            <div class="hero-slide active">
+              <img src="images/slide1.png" alt="Event crowd" />
+            </div>
+            <div class="hero-slide">
+              <img src="images/slide2.png" alt="Conference hall" />
+            </div>
+            <div class="hero-slide">
+              <img src="images/slide3.png" alt="Music concert" />
+            </div>
+            <div class="hero-slide">
+              <img src="images/slide4.png" alt="Music concert" />
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Dynamic API URL - uses environment variable or defaults to localhost
+    const API_BASE = window.location.hostname === 'localhost' 
+      ? 'http://localhost:9098' 
+      : (window.__API_BASE__ || `${window.location.protocol}//${window.location.host.split('.')[0]}-backend.vercel.app`);
+
+    function handleLogout() {
+      window.location.href = 'login.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchUserName();
+
+      const emojiLayer = document.getElementById('floatingEmojiLayer');
+      if (emojiLayer) {
+        // ... emojis ...
+      }
+
+      initHeroSlider();
+      updateReviewBadge();
+    });
+
+    async function fetchUserName() {
+      const userId = localStorage.getItem('eventmate_userId');
+      if (!userId) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/users/${userId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const user = data.user || data;
+          const btnSpan = document.querySelector('.logout-btn span');
+          if (btnSpan && user.fullName) {
+            btnSpan.textContent = user.fullName.split(' ')[0];
+          }
+        }
+      } catch (e) { console.warn('Failed to fetch admin name', e); }
+    }
+
+    function setActiveButton(page) {
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      if (page === 'home') document.getElementById('nav-home').classList.add('active');
+      if (page === 'create') document.getElementById('nav-create').classList.add('active');
+      if (page === 'edit') document.getElementById('nav-edit').classList.add('active');
+      if (page === 'bookings') document.getElementById('nav-bookings').classList.add('active');
+      if (page === 'verify') document.getElementById('nav-verify').classList.add('active');
+      if (page === 'reviews') document.getElementById('nav-reviews').classList.add('active'); // ADDED
+    }
+
+    async function loadHtmlIntoMain(url, titleText) {
+      const main = document.getElementById('mainContent');
+      main.innerHTML = `
+        <div class="content-card">
+          <h2 class="content-title">${titleText}</h2>
+          <p class="content-subtitle loading-text">Loading...</p>
+        </div>
+      `;
+      try {
+        const res = await fetch(url);
+        if (!res.ok) {
+          main.innerHTML = `
+            <div class="content-card">
+              <h2 class="content-title">${titleText}</h2>
+              <p class="content-subtitle error-text">Failed to load content.</p>
+            </div>`;
+          return;
+        }
+        const html = await res.text();
+        main.innerHTML = `<div class="content-card">${html}</div>`;
+      } catch (err) {
+        console.error('Error loading page:', err);
+        main.innerHTML = `
+          <div class="content-card">
+            <h2 class="content-title">${titleText}</h2>
+            <p class="content-subtitle error-text">Error connecting to server.</p>
+          </div>`;
+      }
+    }
+
+    function openPage(page) {
+      setActiveButton(page);
+
+      if (page === 'home') {
+        const main = document.getElementById('mainContent');
+        main.innerHTML = `
+          <div class="content-card">
+            <h2 class="content-title">Admin Dashboard</h2>
+            <p class="content-subtitle">
+              For admins to create events, manage tickets and see all bookings.
+            </p>
+            <p class="content-subtitle">
+              Use the menu on the left to manage events and view bookings.
+            </p>
+
+            <div class="hero-slider" id="heroSlider">
+              <div class="hero-slide active">
+                <img src="images/slide1.png" alt="Event crowd" />
+              </div>
+              <div class="hero-slide">
+                <img src="images/slide2.png" alt="Conference hall" />
+              </div>
+              <div class="hero-slide">
+                <img src="images/slide3.png" alt="Music concert" />
+              </div>
+              <div class="hero-slide">
+                <img src="images/slide4.png" alt="Music concert" />
+              </div>
+            </div>
+          </div>`;
+        initHeroSlider();
+      } else if (page === 'create') {
+        loadHtmlIntoMain('admin-create-event.html', 'Create Events')
+          .then(() => {
+            wireCreateEventForm();
+          });
+      } else if (page === 'edit') {
+        loadHtmlIntoMain('admin-edit-events.html', 'Edit Events')
+          .then(() => {
+            wireEditEventPage();
+          });
+
+      } else if (page === 'bookings') {
+        loadHtmlIntoMain('admin-bookings.html', 'Booking Overview')
+          .then(() => {
+            loadBookings();
+          });
+      } else if (page === 'verify') {
+        renderVerifyPage();
+      } else if (page === 'reviews') { // ADDED
+        renderReviewPage();
+      }
+    }
+
+    function renderVerifyPage() {
+      const main = document.getElementById('mainContent');
+      main.innerHTML = `
+         <div class="content-card">
+            <h2 class="content-title">Verify Ticket</h2>
+            <p class="content-subtitle">Enter Booking ID from the ticket QR code to verify and admit attendees.</p>
+
+            <div style="max-width:400px; margin-top:20px;">
+               <div style="display:flex; gap:10px;">
+                  <input type="number" id="verifyBookingId" placeholder="Enter Booking ID" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                  <button id="btnCheckTicket" style="background:#00a8ff; color:#fff; border:none; padding:0 20px; border-radius:8px; cursor:pointer; font-weight:600;">Check</button>
+               </div>
+
+               <div id="verifyResult" style="margin-top:20px; display:none;">
+                   <div id="verifyCard" style="padding:20px; border-radius:12px; border:1px solid #eee; background:#f9f9f9;">
+                      <h3 id="vEventTitle" style="margin-top:0; color:#04345c;">Event Title</h3>
+                      <div style="margin-bottom:8px;"><strong>Booking ID:</strong> <span id="vBid"></span></div>
+                      <div style="margin-bottom:8px;"><strong>User ID:</strong> <span id="vUid"></span></div>
+                      <div style="margin-bottom:8px;"><strong>Status:</strong> <span id="vStatus" style="font-weight:bold;"></span></div>
+                      <div style="margin-bottom:8px;"><strong>Seats:</strong> <span id="vSeats"></span></div>
+
+                      <div id="vActions" style="margin-top:20px;">
+                         <button id="btnAdmit" style="width:100%; padding:12px; background:#4caf50; color:white; border:none; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer;">ADMIT (CHECK-IN)</button>
+                      </div>
+                   </div>
+               </div>
+            </div>
+         </div>
+       `;
+
+      document.getElementById('btnCheckTicket').onclick = checkTicket;
+    }
+
+    async function checkTicket() {
+      const id = document.getElementById('verifyBookingId').value;
+      if (!id) { alert('Enter ID'); return; }
+
+      const resDiv = document.getElementById('verifyResult');
+      resDiv.style.display = 'none';
+
+      try {
+        const res = await fetch(API_BASE + '/api/bookings');
+        if (!res.ok) throw new Error('Failed to fetch bookings');
+        const all = await res.json();
+        const booking = all.find(b => b.id == id);
+
+        if (!booking) {
+          alert('Booking ID not found!');
+          return;
+        }
+
+        const evRes = await fetch(API_BASE + '/api/events');
+        const events = await evRes.json();
+        const event = events.find(e => e.id == booking.eventId);
+
+        resDiv.style.display = 'block';
+        document.getElementById('vEventTitle').textContent = event ? event.title : 'Unknown Event';
+        document.getElementById('vBid').textContent = booking.id;
+        document.getElementById('vUid').textContent = booking.userId;
+        document.getElementById('vStatus').textContent = booking.status;
+        document.getElementById('vSeats').textContent = booking.seats || 'None';
+
+        const vStatus = document.getElementById('vStatus');
+        if (booking.status === 'CHECKED_IN') {
+          vStatus.style.color = 'green';
+          document.getElementById('btnAdmit').disabled = true;
+          document.getElementById('btnAdmit').textContent = 'ALREADY CHECKED IN';
+          document.getElementById('btnAdmit').style.background = '#ccc';
+        } else if (booking.status === 'CANCELLED') {
+          vStatus.style.color = 'red';
+          document.getElementById('btnAdmit').disabled = true;
+          document.getElementById('btnAdmit').textContent = 'TICKET CANCELLED';
+          document.getElementById('btnAdmit').style.background = '#ef5350';
+        } else {
+          vStatus.style.color = 'orange';
+          document.getElementById('btnAdmit').disabled = false;
+          document.getElementById('btnAdmit').textContent = 'ADMIT (CHECK-IN)';
+          document.getElementById('btnAdmit').style.background = '#4caf50';
+          document.getElementById('btnAdmit').onclick = () => admitUser(booking.id);
+        }
+
+      } catch (e) {
+        console.error(e);
+        alert('Error validating ticket');
+      }
+    }
+
+    async function admitUser(id) {
+      try {
+        const res = await fetch(API_BASE + '/api/bookings/' + id + '/status', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'CHECKED_IN' })
+        });
+        if (res.ok) {
+          alert('Success! User checked in.');
+          checkTicket(); // refresh
+        } else {
+          alert('Failed to update status');
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Error');
+      }
+    }
+
+    let reviewCache = [];
+
+    async function renderReviewPage() {
+      const main = document.getElementById('mainContent');
+      main.innerHTML = `
+            <div class="content-card">
+                <h2 class="content-title">User Reviews</h2>
+                <p class="content-subtitle">Select a review to view details and moderate.</p>
+                <div id="reviewsList" class="review-list-container">
+                    <p class="loading-text" style="padding:20px;">Loading reviews...</p>
+                </div>
+            </div>
+            
+            <!-- Details Modal -->
+            <div class="modal-overlay" id="reviewDetailModal">
+                <div class="detail-card">
+                   <div class="detail-sidebar">
+                      <img src="" id="dAvatar" class="detail-avatar-large">
+                      <div id="dName" class="detail-user-name">User Name</div>
+                      <div id="dMeta" class="detail-user-meta"></div>
+                   </div>
+                   <div class="detail-main">
+                      <div class="detail-header">
+                         <div id="dEvent" class="detail-event-title">Event Title</div>
+                         <div id="dDate" class="detail-date">Attended: 2024-01-01</div>
+                      </div>
+                      
+                      <div id="dStars" class="detail-stars">★★★★★</div>
+                      <div id="dComment" class="detail-comment"></div>
+                      
+                      <div class="detail-actions" id="dActions">
+                          <!-- buttons injected here -->
+                      </div>
+                      <button onclick="document.getElementById('reviewDetailModal').style.display='none'" style="margin-top:20px; background:none; border:none; color:#64748b; cursor:pointer;">Close</button>
+                   </div>
+                </div>
+            </div>
+       `;
+
+      try {
+        const res = await fetch(API_BASE + '/api/admin/feedback');
+        if (!res.ok) throw new Error('Failed to fetch');
+        reviewCache = await res.json();
+
+        const list = document.getElementById('reviewsList');
+        if (reviewCache.length === 0) {
+          list.innerHTML = '<p style="padding:20px; color:#64748b;">No reviews found.</p>';
+          return;
+        }
+
+        list.innerHTML = '';
+        reviewCache.sort((a, b) => (a.status === 'PENDING' ? -1 : 1));
+
+        reviewCache.forEach(r => {
+          const item = document.createElement('div');
+          item.className = 'review-list-item';
+          item.onclick = () => openReviewDetail(r.id);
+
+          const avatar = r.avatarUrl || 'images/avatars/avatar1.png';
+          const statusColor = r.status === 'APPROVED' ? '#22c55e' : (r.status === 'REJECTED' ? '#ef4444' : '#f59e0b');
+
+          item.innerHTML = `
+                  <img src="${avatar}" class="r-avatar">
+                  <div class="r-info">
+                      <div class="r-name">${r.userName || 'User'}</div>
+                      <div class="r-event">${r.eventName || 'Event'}</div>
+                  </div>
+                  <div class="r-rating">${r.rating} ★</div>
+                  <div class="r-status" style="color:${statusColor}; font-weight:600; font-size:12px;">${r.status}</div>
+               `;
+          list.appendChild(item);
+        });
+
+      } catch (e) {
+        console.error(e);
+        document.getElementById('reviewsList').innerHTML = '<p class="error-text" style="padding:20px;">Error loading reviews.</p>';
+      }
+    }
+
+    async function openReviewDetail(id) {
+      const r = reviewCache.find(x => x.id === id);
+      if (!r) return;
+
+      const modal = document.getElementById('reviewDetailModal');
+
+      // Populate basic info
+      document.getElementById('dAvatar').src = r.avatarUrl || 'images/avatars/avatar1.png';
+      document.getElementById('dName').textContent = r.userName || 'User';
+      document.getElementById('dEvent').textContent = r.eventName || 'Event';
+      document.getElementById('dDate').textContent = 'Attended: ' + (r.attendedDate || '?');
+      document.getElementById('dComment').textContent = r.comments || 'No comment.';
+      document.getElementById('dStars').textContent = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+
+      // Fetch extended user info
+      document.getElementById('dMeta').textContent = 'Loading details...';
+      try {
+        const res = await fetch(`${API_BASE}/api/users/${r.userId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const u = data.user || data;
+          document.getElementById('dMeta').innerHTML = `
+                ${u.email || ''}<br>
+                ${u.phoneNumber || ''}<br>
+                ${u.location || ''}
+             `;
+        }
+      } catch (e) { document.getElementById('dMeta').textContent = 'Details unavailable'; }
+
+      // Actions
+      const actions = document.getElementById('dActions');
+      if (r.status === 'PENDING') {
+        actions.innerHTML = `
+             <button class="approve-btn" style="padding:10px 24px;" onclick="updateReviewStatus(${r.id}, 'APPROVED')">Approve</button>
+             <button class="reject-btn" style="padding:10px 24px;" onclick="updateReviewStatus(${r.id}, 'REJECTED')">Reject</button>
+          `;
+      } else {
+        actions.innerHTML = `<span style="font-weight:bold; color:#666;">Status: ${r.status}</span>`;
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    async function updateReviewBadge() {
+      try {
+        const res = await fetch(API_BASE + '/api/admin/feedback');
+        if (res.ok) {
+          const reviews = await res.json();
+          const pending = reviews.filter(r => r.status === 'PENDING').length;
+          const badge = document.getElementById('reviewBadge');
+          if (badge) {
+            if (pending > 0) {
+              badge.textContent = pending;
+              badge.style.display = 'inline-block';
+            } else {
+              badge.style.display = 'none';
+            }
+          }
+        }
+      } catch (e) { console.error('Badge update failed', e); }
+    }
+
+    async function updateReviewStatus(id, status) {
+      if (!confirm('Mark this review as ' + status + '?')) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/feedback/${id}/status?status=${status}`, {
+          method: 'PUT'
+        });
+        if (res.ok) {
+          renderReviewPage(); // Refresh list
+          updateReviewBadge(); // Refresh badge
+        } else {
+          alert('Failed to update status');
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Error updating status');
+      }
+    }
+
+    // Attach JS to the injected create-event form
+    function wireCreateEventForm() {
+      const form = document.getElementById('createEventForm');
+      if (!form) {
+        console.error('createEventForm not found');
+        return;
+      }
+
+      const btnAi = document.getElementById('btnAi');
+      const btnCancel = document.getElementById('btnCancel');
+
+      if (btnAi) {
+        btnAi.addEventListener('click', async () => {
+          const title = document.getElementById('title').value;
+          const category = document.getElementById('category').value;
+          const venue = document.getElementById('venue').value;
+
+          if (!title || !category || !venue) {
+            alert('Please fill in title, category, and venue first.');
+            return;
+          }
+
+          try {
+            const res = await fetch(API_BASE + '/api/events/generate-description', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ title, category, venue })
+            });
+
+            if (!res.ok) {
+              alert('Failed to generate description');
+              return;
+            }
+
+            const data = await res.json();
+            document.getElementById('description').value = data.description;
+          } catch (err) {
+            console.error(err);
+            alert('Error generating description');
+          }
+        });
+      }
+
+      if (btnCancel) {
+        btnCancel.addEventListener('click', () => {
+          openPage('home');
+        });
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const date = document.getElementById('date').value;
+        const time = document.getElementById('time').value;
+        const ampm = document.getElementById('ampm').value;
+
+        let finalTime = time;
+        if (time) {
+          let [hh, mm] = time.split(':').map(Number);
+          if (ampm === 'PM' && hh < 12) hh += 12;
+          if (ampm === 'AM' && hh === 12) hh = 0;
+          finalTime = String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+        }
+
+        const dateTime = (date && finalTime) ? (date + 'T' + finalTime) : '';
+
+        const fileInput = document.getElementById('imageFile');
+        const chosenFileName = fileInput && fileInput.files[0] ? fileInput.files[0].name : '';
+
+        const body = {
+          title: document.getElementById('title').value,
+          dateTime: dateTime,
+          venue: document.getElementById('venue').value,
+          category: document.getElementById('category').value,
+          description: document.getElementById('description').value,
+          imageUrl: document.getElementById('imageUrl').value || chosenFileName,
+          availableSeats: parseInt(document.getElementById('seats').value || '0'),
+          costPerTicket: parseFloat(document.getElementById('cost').value || '0'),
+          currency: document.getElementById('currency').value,
+          status: document.getElementById('status').value,
+          createdByUserId: localStorage.getItem('eventmate_userId') // Added field
+        };
+
+        try {
+          const res = await fetch(API_BASE + '/api/events/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+
+          if (!res.ok) {
+            const errText = await res.text();
+            console.error('Error response:', errText);
+            alert('Failed to save event: ' + res.status);
+            return;
+          }
+
+          const saved = await res.json();
+          alert('Event created with ID: ' + saved.id);
+          form.reset();
+        } catch (err) {
+          console.error(err);
+          alert('Error connecting to server');
+        }
+      });
+    }
+
+    // Logic for Edit Events page
+    let allEvents = [];
+
+    async function wireEditEventPage() {
+      await loadEventsForEdit();
+
+      const btnCancelEdit = document.getElementById('btnCancelEdit');
+      if (btnCancelEdit) {
+        btnCancelEdit.addEventListener('click', cancelEdit);
+      }
+
+      const editForm = document.getElementById('editEventForm');
+      if (editForm) {
+        editForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const id = document.getElementById('editId').value;
+          if (!id) {
+            alert('No event selected.');
+            return;
+          }
+
+          const date = document.getElementById('editDate').value;
+          const time = document.getElementById('editTime').value;
+          const dateTime = (date && time) ? (date + 'T' + time + ':00') : null;
+
+          const endDate = document.getElementById('editEndDate').value;
+          const endTime = document.getElementById('editEndTime').value;
+          const endDateTime = (endDate && endTime) ? (endDate + 'T' + endTime + ':00') : null;
+
+
+          const body = {
+            title: document.getElementById('editTitle').value,
+            dateTime: dateTime,
+            endDate: endDateTime,
+            venue: document.getElementById('editVenue').value,
+            category: document.getElementById('editCategory').value,
+            status: document.getElementById('editStatus').value,
+            description: document.getElementById('editDescription').value,
+            availableSeats: parseInt(document.getElementById('editSeats').value || '0'),
+            costPerTicket: parseFloat(document.getElementById('editCost').value || '0'),
+            currency: document.getElementById('editCurrency').value
+          };
+
+          try {
+            const res = await fetch(API_BASE + '/api/events/' + id, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body)
+            });
+
+            if (!res.ok) {
+              alert('Failed to update event (HTTP ' + res.status + ')');
+              return;
+            }
+
+            alert('Event updated successfully.');
+            document.getElementById('editPanel').style.display = 'none';
+            await loadEventsForEdit();
+          } catch (err) {
+            console.error('Error updating event:', err);
+            alert('Error connecting to server.');
+          }
+        });
+      }
+    }
+
+    async function loadEventsForEdit() {
+      const tbody = document.querySelector('#eventsTable tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = '<tr><td colspan="7">Loading events...</td></tr>';
+
+      try {
+        const res = await fetch(API_BASE + '/api/events');
+        if (!res.ok) {
+          tbody.innerHTML = '<tr><td colspan="7">Failed to load events.</td></tr>';
+          return;
+        }
+        const events = await res.json();
+        allEvents = events;
+
+        if (!events || events.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7">No events available.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = '';
+        events.forEach(e => {
+          const tr = document.createElement('tr');
+          const dt = e.dateTime ? e.dateTime.replace("T", " ") : "Date not set";
+
+          tr.innerHTML = `
+            <td>${e.id}</td>
+            <td>${e.title}</td>
+            <td>${dt}</td>
+            <td>${e.endDate ? e.endDate.replace("T", " ") : "-"}</td>
+            <td>${e.venue || 'Venue TBD'}</td>
+            <td>${e.category || '<span class="badge-pill">N/A</span>'}</td>
+            <td>${e.availableSeats ?? '-'}</td>
+            <td>
+              <div class="event-actions">
+                <button class="btn-edit" data-id="${e.id}">Edit</button>
+                <button class="btn-delete" data-id="${e.id}">Delete</button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        document.querySelectorAll('.btn-edit').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = parseInt(btn.getAttribute('data-id'), 10);
+            startEdit(id);
+          });
+        });
+
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = parseInt(btn.getAttribute('data-id'), 10);
+            deleteEvent(id);
+          });
+        });
+
+      } catch (err) {
+        console.error('Error loading events:', err);
+        tbody.innerHTML = '<tr><td colspan="7">Error connecting to server.</td></tr>';
+      }
+    }
+
+    function startEdit(id) {
+      const eventData = allEvents.find(e => e.id === id);
+      if (!eventData) {
+        alert('Event not found in loaded list.');
+        return;
+      }
+
+      document.getElementById('editId').value = eventData.id;
+      document.getElementById('editTitle').value = eventData.title || '';
+
+      if (eventData.dateTime) {
+        const [datePart, timePart] = eventData.dateTime.split('T');
+        document.getElementById('editDate').value = datePart || '';
+        document.getElementById('editTime').value = (timePart || '').slice(0, 5);
+      } else {
+        document.getElementById('editDate').value = '';
+        document.getElementById('editTime').value = '';
+      }
+
+      if (eventData.endDate) {
+        const [eDatePart, eTimePart] = eventData.endDate.split('T');
+        document.getElementById('editEndDate').value = eDatePart || '';
+        document.getElementById('editEndTime').value = (eTimePart || '').slice(0, 5);
+      } else {
+        document.getElementById('editEndDate').value = '';
+        document.getElementById('editEndTime').value = '';
+      }
+
+      document.getElementById('editVenue').value = eventData.venue || '';
+      document.getElementById('editCategory').value = eventData.category || '';
+      document.getElementById('editStatus').value = eventData.status || 'ACTIVE';
+      document.getElementById('editDescription').value = eventData.description || '';
+      document.getElementById('editSeats').value = eventData.availableSeats ?? '';
+      document.getElementById('editCost').value = eventData.costPerTicket ?? '';
+      document.getElementById('editCurrency').value = eventData.currency || '';
+
+      document.getElementById('editPanel').style.display = 'block';
+      const panel = document.getElementById('editPanel');
+      panel.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+      const panel = document.getElementById('editPanel');
+      if (panel) panel.style.display = 'none';
+      const form = document.getElementById('editEventForm');
+      if (form) form.reset();
+    }
+
+    async function deleteEvent(id) {
+      const ok = confirm('Are you sure you want to delete event #' + id + '?');
+      if (!ok) return;
+
+      try {
+        const res = await fetch(API_BASE + '/api/events/' + id, {
+          method: 'DELETE'
+        });
+
+        if (!res.ok) {
+          alert('Failed to delete event (HTTP ' + res.status + ')');
+          return;
+        }
+
+        await loadEventsForEdit();
+        cancelEdit();
+      } catch (err) {
+        console.error('Error deleting event:', err);
+        alert('Error while deleting the event.');
+      }
+    }
+
+    // simple auto slider
+    let heroInterval = null;
+    function initHeroSlider() {
+      const slides = document.querySelectorAll('.hero-slide');
+      if (!slides.length) return;
+      let index = 0;
+      function show(i) {
+        slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+      }
+      show(index);
+      if (heroInterval) clearInterval(heroInterval);
+      heroInterval = setInterval(() => {
+        index = (index + 1) % slides.length;
+        show(index);
+      }, 3000);
+    }
+
+    // --- BOOKING LOGIC ---
+    let allBookings = [];
+
+    async function loadBookings() {
+      const tbody = document.querySelector('#bookingsTable tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="10">Loading...</td></tr>';
+
+      try {
+        const res = await fetch(API_BASE + '/api/bookings');
+        if (!res.ok) {
+          console.error('Failed to load bookings, status =', res.status);
+          tbody.innerHTML = '<tr><td colspan="10">Failed to connect to server.</td></tr>';
+          return;
+        }
+        const data = await res.json();
+        allBookings = data;
+        renderTable(allBookings);
+        updateStats(allBookings);
+      } catch (err) {
+        console.error('Error loading bookings:', err);
+        tbody.innerHTML = '<tr><td colspan="10">Error connecting to server.</td></tr>';
+      }
+    }
+
+    function renderTable(bookings) {
+      const tbody = document.querySelector('#bookingsTable tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (!bookings || bookings.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">No bookings found.</td></tr>';
+        return;
+      }
+
+      bookings.forEach(b => {
+        const tr = document.createElement('tr');
+
+        const bookingId = b.id;
+        const eventTitle = b.eventTitle || ('Event #' + b.eventId);
+        const eventDateTime = b.eventDateTime ? b.eventDateTime.replace('T', ' ') : '';
+        const userName = b.userName || ('User #' + b.userId);
+        const tickets = b.tickets;
+        const paymentMode = b.paymentMode || '';
+        const paymentStatus = b.paymentStatus || 'PAID';
+        const status = b.status || 'CONFIRMED';
+        const createdAt = b.createdAt ? b.createdAt.replace('T', ' ') : '';
+
+        tr.innerHTML = `
+          <td>${bookingId}</td>
+          <td>${eventTitle}</td>
+          <td>${eventDateTime}</td>
+          <td>${userName}</td>
+          <td>${tickets}</td>
+          <td>${paymentMode}</td>
+          <td>${paymentStatus}</td>
+          <td>${status}</td>
+          <td>${createdAt}</td>
+          <td class="actions">
+             ${status !== 'CONFIRMED' ? `<button class="btn-confirm" onclick="changeStatus(${bookingId}, 'CONFIRMED')">Confirm</button>` : ''}
+             ${status !== 'CANCELLED' ? `<button class="btn-cancel" onclick="changeStatus(${bookingId}, 'CANCELLED')">Cancel</button>` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateStats(bookings) {
+      const totalEl = document.getElementById('stat-total');
+      if (!totalEl) return;
+      totalEl.textContent = bookings.length;
+      document.getElementById('stat-confirmed').textContent = bookings.filter(b => b.status === 'CONFIRMED').length;
+      document.getElementById('stat-pending').textContent = bookings.filter(b => b.status === 'PENDING').length;
+      document.getElementById('stat-cancelled').textContent = bookings.filter(b => b.status === 'CANCELLED').length;
+    }
+
+    function applyFilters() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const status = document.getElementById('statusFilter').value;
+
+      const filtered = allBookings.filter(b => {
+        const bookingId = (b.id + '').toLowerCase();
+        const eventTitle = (b.eventTitle || '').toLowerCase();
+        const userName = (b.userName || '').toLowerCase();
+
+        const matchesSearch = bookingId.includes(search) || eventTitle.includes(search) || userName.includes(search);
+        const matchesStatus = status ? b.status === status : true;
+        return matchesSearch && matchesStatus;
+      });
+      renderTable(filtered);
+      updateStats(filtered);
+    }
+
+    function resetFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('statusFilter').value = '';
+      renderTable(allBookings);
+      updateStats(allBookings);
+    }
+
+    async function changeStatus(bookingId, newStatus) {
+      if (!confirm('Mark booking #' + bookingId + ' as ' + newStatus + '?')) return;
+      try {
+        const res = await fetch(API_BASE + '/api/bookings/' + bookingId + '/status', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+        if (res.ok) {
+          loadBookings();
+        } else {
+          alert('Failed to update status');
+        }
+      } catch (e) { console.error(e); }
+    }
+
+  </script>
+</body>
+
+</html>

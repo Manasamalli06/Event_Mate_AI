@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd frontend/eventmateai && npm install && npm run build",
+  "outputDirectory": "frontend/eventmateai/dist",
+  "framework": "vite"
+}

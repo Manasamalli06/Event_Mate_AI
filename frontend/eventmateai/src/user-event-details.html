@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Event Details - Event Mate AI</title>
+  <link rel="stylesheet" href="dashboard.css" />
+  <style>
+    body {
+      background: #f5fbff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+    }
+
+    .details-wrapper {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .event-title {
+      font-size: 24px;
+      color: #04345c;
+      margin-bottom: 8px;
+    }
+
+    .event-meta {
+      font-size: 14px;
+      color: #5b7285;
+      margin-bottom: 12px;
+    }
+
+    .event-desc {
+      font-size: 14px;
+      color: #354a5f;
+      margin-bottom: 16px;
+    }
+
+    .event-image {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .back-link {
+      font-size: 13px;
+      color: #00a8ff;
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="details-wrapper">
+    <a href="user-events.html" class="back-link">&larr; Back to events</a>
+    <h1 class="event-title" id="title">Loading...</h1>
+    <div class="event-meta" id="meta"></div>
+
+    <!-- Image wrapped in link so click opens full image -->
+    <a id="imageLink" href="#" target="_blank">
+      <img id="image" class="event-image" />
+    </a>
+
+    <p class="event-desc" id="description"></p>
+
+    <div style="margin-top:20px;">
+      <a id="bookNowBtn" href="#" class="back-link"
+        style="background:#00a8ff; color:#fff; padding:10px 20px; border-radius:999px; text-decoration:none; font-weight:600;">Book
+        Now</a>
+    </div>
+  </div>
+
+  <script>
+    function getEventIdFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('id');
+    }
+
+    async function loadEventDetails() {
+      const id = getEventIdFromUrl();
+      if (!id) {
+        document.getElementById('title').textContent = 'No event selected.';
+        return;
+      }
+
+      try {
+        // FIXED: correct base URL (no '=')
+        const res = await fetch('http://localhost:9098/api/events/' + id);
+        if (!res.ok) {
+          document.getElementById('title').textContent = 'Failed to load event.';
+          return;
+        }
+        const e = await res.json();
+
+        document.getElementById('title').textContent = e.title || 'Event';
+
+        const dt = e.dateTime ? e.dateTime.replace('T', ' ') : 'Date not set';
+        const venue = e.venue || 'Venue TBD';
+        const price = (e.costPerTicket != null)
+          ? (e.costPerTicket + ' ' + (e.currency || ''))
+          : 'Free';
+        document.getElementById('meta').textContent =
+          dt + ' • ' + venue + ' • ' + price;
+
+        document.getElementById('description').textContent =
+          e.description || 'No description.';
+
+        if (e.imageUrl) {
+          const img = document.getElementById('image');
+          const link = document.getElementById('imageLink');
+          img.src = e.imageUrl;
+          img.style.display = 'block';
+          img.style.cursor = 'pointer';
+          link.href = e.imageUrl; // clicking opens full image in new tab
+        }
+
+        const bookBtn = document.getElementById('bookNowBtn');
+        if (bookBtn) {
+          bookBtn.href = `user-booking.html?id=${e.id}`;
+        }
+      } catch (err) {
+        console.error(err);
+        document.getElementById('title').textContent = 'Error connecting to server.';
+      }
+    }
+
+    loadEventDetails();
+  </script>
+</body>
+
+</html>

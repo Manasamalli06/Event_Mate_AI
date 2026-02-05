@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>My Bookings - Event Mate AI</title>
+  <link rel="stylesheet" href="dashboard.css" />
+  <style>
+    .bookings-wrapper {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    .bookings-title {
+      font-size: 24px;
+      color: #04345c;
+      margin-bottom: 8px;
+    }
+
+    .bookings-subtitle {
+      font-size: 14px;
+      color: #5b7285;
+      margin-bottom: 18px;
+    }
+
+    .booking-card {
+      background: #e9f7ff;
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .booking-main {
+      flex: 1;
+      cursor: pointer;
+      display: flex;
+      gap: 12px;
+    }
+
+    .booking-thumb {
+      width: 80px;
+      height: 80px;
+      border-radius: 10px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #d0e4f2;
+    }
+
+    .booking-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .booking-content {
+      flex: 1;
+    }
+
+    .booking-title {
+      font-size: 16px;
+      color: #04345c;
+      margin: 0 0 4px;
+    }
+
+    .booking-meta {
+      font-size: 13px;
+      color: #5b7285;
+      margin-bottom: 4px;
+    }
+
+    .booking-extra {
+      font-size: 13px;
+      color: #354a5f;
+    }
+
+    .card-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .delete-btn,
+    .download-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .delete-btn {
+      background: #ff4d4f;
+      color: #ffffff;
+    }
+
+    .delete-btn:hover {
+      background: #e03a3c;
+    }
+
+    .download-btn {
+      background: #00a8ff;
+      color: #ffffff;
+    }
+
+    .download-btn:hover {
+      background: #008fd4;
+    }
+
+    .details-section {
+      margin-top: 24px;
+      background: #e9f7ff;
+      border-radius: 16px;
+      padding: 16px 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      display: none;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .details-left {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .details-image-box {
+      width: 140px;
+      height: 140px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #d0e4f2;
+    }
+
+    .details-image-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .qr-box {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 10px;
+      border: 1px dashed #c5d8e6;
+      text-align: center;
+      font-size: 10px;
+      color: #354a5f;
+      width: 160px;
+    }
+
+    #ticketQrCanvas {
+      width: 140px;
+      height: 140px;
+      display: block;
+      margin: 0 auto 4px;
+    }
+
+    .details-right {
+      flex: 1;
+    }
+
+    .details-title {
+      font-size: 18px;
+      color: #04345c;
+      margin: 0 0 8px;
+    }
+
+    .details-meta {
+      font-size: 13px;
+      color: #354a5f;
+      margin-bottom: 4px;
+    }
+
+    .seat-legend {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: #5b7285;
+      margin: 8px 0;
+      flex-wrap: wrap;
+    }
+
+    .seat-box {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      margin-right: 4px;
+    }
+
+    .seat-available {
+      background: #f0f6ff;
+    }
+
+    .seat-selected {
+      background: #00a8ff;
+    }
+
+    .seat-container {
+      display: grid;
+      grid-template-columns: repeat(11, 1fr);
+      gap: 6px;
+      justify-items: center;
+      padding: 10px;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px dashed #c5d8e6;
+      margin-top: 6px;
+    }
+
+    .seat {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      background: #f0f6ff;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #04345c;
+      border: 1px solid #c5d8e6;
+    }
+
+    .seat.selected {
+      background: #00a8ff;
+      color: #ffffff;
+      border-color: #0070b3;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+
+      #detailsSection,
+      #detailsSection * {
+        visibility: visible;
+      }
+
+      #detailsSection {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 40px;
+        margin: 0;
+        box-shadow: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .seat-container {
+        grid-template-columns: repeat(9, 1fr);
+      }
+
+      .details-section {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .details-left {
+        flex-direction: row;
+        justify-content: center;
+      }
+    }
+  </style>
+  /* Modal Styles */
+  .modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  }
+  .rate-card {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  width: 400px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  }
+  .rate-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  }
+  .rate-back-btn {
+  background: none; border: none; font-size: 20px; cursor: pointer; color: #333;
+  }
+  .rate-title {
+  flex: 1; font-weight: bold; font-size: 18px; color: #333;
+  }
+  .user-profile-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  }
+  .user-avatar-u {
+  width: 60px; height: 60px; border-radius: 50%; object-fit: cover;
+  }
+  .user-info-text {
+  text-align: left;
+  }
+  .user-name-u {
+  font-weight: bold; font-size: 16px; color: #04345c; margin: 0;
+  }
+  .attended-date {
+  font-size: 12px; color: #6b7280; margin: 0;
+  }
+  .rating-wrapper {
+  margin-bottom: 20px;
+  }
+  .rating-label {
+  font-weight: bold; font-size: 14px; margin-bottom: 10px; display: block; color: #333; text-align: left;
+  }
+  .star-buttons {
+  display: flex; gap: 8px; justify-content: center;
+  }
+  .star-btn {
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.2s;
+  }
+  .star-btn.active {
+  background: #00a8ff; color: white; border-color: #00a8ff;
+  }
+  .review-area {
+  width: 100%;
+  height: 100px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  background: #f8f9fa;
+  resize: none;
+  font-family: inherit;
+  margin-bottom: 20px;
+  }
+  .submit-review-btn {
+  background: #00a8ff; color: white; border: none; padding: 12px; width: 100%; border-radius: 25px; font-weight: bold;
+  cursor: pointer;
+  }
+  .submit-review-btn:hover { background: #008fd4; }
+  .close-modal-btn {
+  position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color:
+  #999;
+  }
+  </style>
+</head>
+
+<body>
+  <!-- floating emojis layer -->
+  <div class="floating-emoji-layer" id="floatingEmojiLayer"></div>
+
+
+
+  <main class="app-main">
+
+
+    <div class="bookings-wrapper">
+      <h1 class="bookings-title">My Bookings</h1>
+      <p class="bookings-subtitle">
+        View all events you have booked tickets for in EventMate AI.
+      </p>
+
+      <div id="bookingsContainer">
+        Loading bookings...
+      </div>
+
+      <!-- Ticket / Booking details area (also used for printing) -->
+      <div id="detailsSection" class="details-section">
+        <div class="details-left">
+          <div class="details-image-box" id="detailsImageBox" style="display:none;">
+            <img id="detailsImage" src="" alt="Event poster" />
+          </div>
+          <div class="qr-box">
+            <canvas id="ticketQrCanvas"></canvas>
+            <div>Scan at venue to verify booking</div>
+          </div>
+        </div>
+
+        <div class="details-right">
+          <h2 class="details-title" id="detailsTitle">Booking Details</h2>
+          <div id="detailsMeta"></div>
+          <div class="seat-legend">
+            <span><span class="seat-box seat-available"></span> Available layout</span>
+            <span><span class="seat-box seat-selected"></span> Your booked seats</span>
+          </div>
+          <div id="detailsSeatContainer" class="seat-container"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+  </div>
+
+
+  <!-- Rate Event Modal -->
+  <div class="modal-overlay" id="rateModal">
+    <div class="rate-card">
+      <button class="close-modal-btn" onclick="closeRateModal()">&times;</button>
+
+      <div class="rate-header">
+        <button class="rate-back-btn" onclick="closeRateModal()">←</button>
+        <div class="rate-title">Rate Event</div>
+      </div>
+
+      <!-- User Info Section -->
+      <div class="user-profile-section">
+        <img src="images/avatars/avatar1.png" alt="User" class="user-avatar-u" id="rateUserAvatar">
+        <div class="user-info-text">
+          <h3 class="user-name-u" id="rateUserName">User Name</h3>
+          <p class="attended-date" id="rateAttendedDate">Attended: 2024-01-01</p>
+        </div>
+      </div>
+
+      <div class="rating-wrapper">
+        <label class="rating-label">Your Rating</label>
+        <div class="star-buttons">
+          <button class="star-btn" onclick="selectStar(1)">1 Star</button>
+          <button class="star-btn" onclick="selectStar(2)">2 Stars</button>
+          <button class="star-btn" onclick="selectStar(3)">3 Stars</button>
+          <button class="star-btn" onclick="selectStar(4)">4 Stars</button>
+          <button class="star-btn" onclick="selectStar(5)">5 Stars</button>
+        </div>
+      </div>
+
+      <div class="rating-wrapper">
+        <label class="rating-label">Your Review</label>
+        <textarea class="review-area" id="reviewComment" placeholder="Share your thoughts about the event"></textarea>
+      </div>
+
+      <button class="submit-review-btn" onclick="submitReview()">Submit Review</button>
+
+      <!-- Admin status placeholder if needed -->
+    </div>
+  </div>
+
+  <!-- floating emojis script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const emojiLayer = document.getElementById('floatingEmojiLayer');
+      if (!emojiLayer) return;
+
+      const EMOJIS = ['🎉', '🎊', '🎈', '🥳', '🎂', '🎟️', '🎫', '✨', '🍾', '🎵', '🎤', '🎧', '📅'];
+
+      function createEmojiBubble() {
+        const span = document.createElement('span');
+        span.className = 'emoji-bubble';
+        span.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+
+        const startLeft = Math.random() * 100;
+        const startTop = Math.random() * 100;
+        const dx = (Math.random() * 40 - 20);
+        const dy = (Math.random() * 40 - 20);
+        const duration = 6 + Math.random() * 6;
+
+        span.style.left = startLeft + 'vw';
+        span.style.top = startTop + 'vh';
+        span.style.setProperty('--dx', dx + 'vw');
+        span.style.setProperty('--dy', dy + 'vh');
+        span.style.animationDuration = duration + 's';
+
+        emojiLayer.appendChild(span);
+        setTimeout(() => span.remove(), duration * 1000);
+      }
+
+      setInterval(createEmojiBubble, 800);
+    });
+  </script>
+
+  <script>
+    // FIXED: removed stray '+' from URL
+    // Dynamic API URL - uses environment variable or defaults to localhost
+    const API_BASE = window.location.hostname === 'localhost' 
+      ? 'http://localhost:9098' 
+      : (window.__API_BASE__ || `${window.location.protocol}//${window.location.host.split('.')[0]}-backend.vercel.app`);
+    let eventsCache = [];
+    const ROWS = ['A', 'B', 'C', 'D', 'E'];
+    const SEATS_PER_ROW = 10;
+
+    function handleLogout() {
+      window.location.href = 'login.html';
+    }
+
+    function handleBackUserBookings() {
+      if (document.referrer) {
+        window.history.back();
+      } else {
+        window.location.href = 'user-home.html';
+      }
+    }
+
+    async function loadEvents() {
+      try {
+        const res = await fetch(API_BASE + '/api/events');
+        if (res.ok) {
+          eventsCache = await res.json();
+        }
+      } catch (e) {
+        console.error('Error loading events:', e);
+      }
+    }
+
+    async function loadMyBookings() {
+      const container = document.getElementById('bookingsContainer');
+      try {
+        const userId = localStorage.getItem('eventmate_userId');
+        if (!userId) {
+          container.textContent = 'Please log in to view your bookings.';
+          return;
+        }
+        const url = API_BASE + '/api/bookings/user/' + userId;
+        const res = await fetch(url);
+
+        if (!res.ok) {
+          container.textContent = 'Failed to load bookings.';
+          return;
+        }
+
+        const bookings = await res.json();
+
+        if (!Array.isArray(bookings) || bookings.length === 0) {
+          container.textContent = 'You have not booked any events yet.';
+          return;
+        }
+
+        container.innerHTML = '';
+
+        for (const b of bookings) {
+          const card = document.createElement('div');
+          card.className = 'booking-card';
+
+          const main = document.createElement('div');
+          main.className = 'booking-main';
+
+          const event = eventsCache.find(e => e.id == b.eventId);
+          const eventTitle = event ? event.title : ('Event #' + b.eventId);
+
+          const thumb = document.createElement('div');
+          thumb.className = 'booking-thumb';
+          if (event && event.imageUrl) {
+            const img = document.createElement('img');
+            img.src = event.imageUrl;
+            img.alt = eventTitle;
+            thumb.appendChild(img);
+          }
+
+          const content = document.createElement('div');
+          content.className = 'booking-content';
+
+          const title = document.createElement('h2');
+          title.className = 'booking-title';
+          title.textContent = eventTitle;
+
+          const meta = document.createElement('div');
+          meta.className = 'booking-meta';
+
+          const dt = b.eventDateTime
+            ? String(b.eventDateTime).replace('T', ' ')
+            : 'Date not set';
+
+          const eventData = event;
+          const price = eventData
+            ? (eventData.costPerTicket
+              ? (eventData.costPerTicket * b.tickets) + ' ' + (eventData.currency || '')
+              : 'Free')
+            : 'Price not available';
+
+          meta.textContent =
+            dt +
+            ' • Tickets: ' + (b.tickets ?? '-') +
+            ' • Price: ' + price +
+            ' • Status: ' + (b.status || 'CONFIRMED');
+
+          const extra = document.createElement('div');
+          extra.className = 'booking-extra';
+          extra.textContent = 'Payment: ' + (b.paymentMode || 'N/A');
+
+          content.appendChild(title);
+          content.appendChild(meta);
+          content.appendChild(extra);
+
+          if (b.seats) {
+            const seatsDiv = document.createElement('div');
+            seatsDiv.className = 'booking-extra';
+            seatsDiv.textContent = 'Seats: ' + b.seats;
+            content.appendChild(seatsDiv);
+          }
+
+          main.appendChild(thumb);
+          main.appendChild(content);
+
+          main.addEventListener('click', () => {
+            showBookingDetails(b);
+          });
+
+          const actions = document.createElement('div');
+          actions.className = 'card-actions';
+
+          const downloadBtn = document.createElement('button');
+          downloadBtn.className = 'download-btn';
+          downloadBtn.textContent = 'Download';
+          downloadBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            downloadTicket(b);
+          });
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'delete-btn';
+          deleteBtn.textContent = 'Delete';
+          deleteBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            await deleteBooking(b.id);
+          });
+
+          actions.appendChild(downloadBtn);
+
+          if (b.status !== 'CANCELLED') {
+            const rateBtn = document.createElement('button');
+            rateBtn.className = 'download-btn';
+            rateBtn.textContent = 'Rate';
+            rateBtn.style.background = '#6c5ce7'; // Purple-ish
+            rateBtn.style.marginTop = '6px';
+            rateBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              rateEvent(b);
+            });
+            actions.appendChild(rateBtn);
+          }
+
+          actions.appendChild(deleteBtn);
+
+          card.appendChild(main);
+          card.appendChild(actions);
+          container.appendChild(card);
+        }
+      } catch (err) {
+        console.error('Error loading bookings:', err);
+        container.textContent = 'Error connecting to server.';
+      }
+    }
+
+    function showBookingDetails(booking) {
+      const detailsSection = document.getElementById('detailsSection');
+      const detailsMeta = document.getElementById('detailsMeta');
+      const detailsSeatContainer = document.getElementById('detailsSeatContainer');
+      const detailsImageBox = document.getElementById('detailsImageBox');
+      const detailsImage = document.getElementById('detailsImage');
+      const detailsTitle = document.getElementById('detailsTitle');
+
+      detailsSection.style.display = 'flex';
+      detailsMeta.innerHTML = '';
+
+      const event = eventsCache.find(e => e.id == booking.eventId);
+      const eventTitle = event ? event.title : ('Event #' + booking.eventId);
+      detailsTitle.textContent = 'Ticket for: ' + eventTitle;
+
+      const dt = booking.eventDateTime
+        ? String(booking.eventDateTime).replace('T', ' ')
+        : 'Date not set';
+
+      const eventData = event;
+      const price = eventData
+        ? (eventData.costPerTicket
+          ? (eventData.costPerTicket * booking.tickets) + ' ' + (eventData.currency || '')
+          : 'Free')
+        : 'Price not available';
+
+      if (eventData && eventData.imageUrl) {
+        detailsImageBox.style.display = 'block';
+        detailsImage.src = eventData.imageUrl;
+        detailsImage.alt = eventTitle;
+      } else {
+        detailsImageBox.style.display = 'none';
+        detailsImage.src = '';
+      }
+
+      const seatsArray = booking.seats
+        ? String(booking.seats).split(',').map(s => s.trim()).filter(s => s.length > 0)
+        : [];
+
+      const lines = [
+        'Booking ID: ' + (booking.id ?? '-'),
+        'Event: ' + eventTitle,
+        'Date & Time: ' + dt,
+        'Tickets: ' + (booking.tickets ?? '-'),
+        'Price: ' + price,
+        'Status: ' + (booking.status || 'CONFIRMED'),
+        'Payment: ' + (booking.paymentMode || 'N/A'),
+        'Seats: ' + (seatsArray.length ? seatsArray.join(', ') : 'N/A')
+      ];
+
+      lines.forEach(text => {
+        const div = document.createElement('div');
+        div.className = 'details-meta';
+        div.textContent = text;
+        detailsMeta.appendChild(div);
+      });
+
+      renderSeatGrid(detailsSeatContainer, seatsArray);
+
+      const qrData = buildQrData(booking, eventTitle);
+      drawSimpleQr('ticketQrCanvas', qrData);
+    }
+
+    function renderSeatGrid(container, bookedSeatsArray) {
+      container.innerHTML = '';
+      const bookedSet = new Set(bookedSeatsArray || []);
+
+      ROWS.forEach(row => {
+        const rowLabel = document.createElement('div');
+        rowLabel.textContent = row;
+        rowLabel.style.display = 'flex';
+        rowLabel.style.alignItems = 'center';
+        rowLabel.style.justifyContent = 'center';
+        rowLabel.style.fontSize = '12px';
+        rowLabel.style.color = '#04345c';
+        container.appendChild(rowLabel);
+
+        for (let i = 1; i <= SEATS_PER_ROW; i++) {
+          const id = row + i;
+          const div = document.createElement('div');
+          div.classList.add('seat');
+          div.textContent = i;
+
+          if (bookedSet.has(id)) {
+            div.classList.add('selected');
+          }
+
+          container.appendChild(div);
+        }
+      });
+    }
+
+    async function deleteBooking(bookingId) {
+      const confirmDelete = window.confirm('Do you really want to delete this booking?');
+      if (!confirmDelete) return;
+
+      try {
+        const url = API_BASE + '/api/bookings/' + bookingId;
+        const res = await fetch(url, { method: 'DELETE' });
+
+        if (!res.ok) {
+          alert('Failed to delete booking.');
+          return;
+        }
+
+        alert('Booking deleted.');
+        loadMyBookings();
+        document.getElementById('detailsSection').style.display = 'none';
+      } catch (err) {
+        console.error('Error deleting booking:', err);
+        alert('Error connecting to server while deleting.');
+      }
+    }
+
+    function buildQrData(booking, eventTitle) {
+      const seats = booking.seats || '';
+      return `BID:${booking.id}|EV:${eventTitle}|T:${booking.tickets}|S:${seats}`;
+    }
+
+    function downloadTicket(booking) {
+      showBookingDetails(booking);
+      setTimeout(() => {
+        window.print();
+      }, 200);
+    }
+
+    // simple QR-like generator (demo only)
+    function drawSimpleQr(canvasId, text) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const size = 200;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+
+      const encoder = new TextEncoder();
+      const bytes = encoder.encode(text);
+
+      const cells = 25;
+      const cellSize = size / cells;
+
+      ctx.fillStyle = '#000000';
+      let idx = 0;
+      for (let y = 0; y < cells; y++) {
+        for (let x = 0; x < cells; x++) {
+          const b = bytes[idx % bytes.length];
+          if ((b + x + y) % 3 == 0) {
+            ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+          }
+          idx++;
+        }
+      }
+    }
+
+    // Rate functionality
+    let currentRateBooking = null;
+    let currentRating = 0;
+
+    // Add Rate button and helper functions
+
+    function closeRateModal() {
+      document.getElementById('rateModal').style.display = 'none';
+      currentRateBooking = null;
+      currentRating = 0;
+      document.getElementById('reviewComment').value = '';
+      document.querySelectorAll('.star-btn').forEach(b => b.classList.remove('active'));
+    }
+
+    function selectStar(n) {
+      currentRating = n;
+      document.querySelectorAll('.star-btn').forEach((b, idx) => {
+        if (idx < n) b.classList.add('active');
+        else b.classList.remove('active');
+      });
+    }
+
+    async function rateEvent(booking) {
+      currentRateBooking = booking;
+      const userId = localStorage.getItem('eventmate_userId');
+      if (!userId) return;
+
+      // Fetch user details for UI
+      try {
+        const res = await fetch(API_BASE + '/api/users/' + userId);
+        if (res.ok) {
+          const data = await res.json();
+          const u = data.user || data; // handle wrapped response
+          document.getElementById('rateUserName').textContent = u.fullName || 'User';
+          document.getElementById('rateUserAvatar').src = u.avatarUrl || 'images/avatars/avatar1.png';
+        }
+      } catch (e) { console.error(e); }
+
+      const dt = booking.eventDateTime ? booking.eventDateTime.split('T')[0] : 'Unknown';
+      document.getElementById('rateAttendedDate').textContent = 'Attended: ' + dt;
+
+      document.getElementById('rateModal').style.display = 'flex';
+    }
+
+    async function submitReview() {
+      if (!currentRateBooking || currentRating === 0) {
+        alert('Please select a rating');
+        return;
+      }
+
+      const userId = localStorage.getItem('eventmate_userId');
+      const comments = document.getElementById('reviewComment').value;
+      const dt = currentRateBooking.eventDateTime ? currentRateBooking.eventDateTime.split('T')[0] : new Date().toISOString().split('T')[0];
+
+      try {
+        const res = await fetch(API_BASE + '/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventId: currentRateBooking.eventId,
+            userId: userId,
+            rating: currentRating,
+            comments: comments,
+            attendedDate: dt
+          })
+        });
+
+        if (res.ok) {
+          alert('Review submitted successfully! Pending admin approval.');
+          closeRateModal();
+        } else if (res.status === 409) {
+          alert('You have already submitted a review for this event.');
+        } else {
+          alert('Failed to submit review.');
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Error submitting review');
+      }
+    }
+
+    // Existing functions...
+
+    loadEvents().then(() => loadMyBookings());
+
+
+
+    // Rerunning to ensure correct overload
+
+  </script>
+</body>
+
+</html>

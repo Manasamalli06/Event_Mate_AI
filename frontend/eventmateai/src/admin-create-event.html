@@ -1,0 +1,236 @@
+<div class="create-wrapper">
+  <div class="create-card">
+    <h1 class="create-title">Create Event</h1>
+    <p class="create-subtitle">
+      Fill in the event details below and save to add it to Event Mate AI.
+    </p>
+
+    <form id="createEventForm" autocomplete="off">
+      <div class="form-grid">
+        <div class="form-row-full">
+          <label for="title">Event Title</label>
+          <input type="text" id="title" name="title" placeholder="Enter event title" required />
+        </div>
+
+        <div class="form-row-full">
+          <label>Start Date &amp; Time</label>
+          <div style="display:flex; gap:8px;">
+            <input type="date" id="date" name="date" required />
+            <input type="time" id="time" name="time" required />
+            <select id="ampm" name="ampm">
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row-full">
+          <label>End Date &amp; Time</label>
+          <div style="display:flex; gap:8px;">
+            <input type="date" id="endDate" name="endDate" required />
+            <input type="time" id="endTime" name="endTime" required />
+            <select id="endAmpm" name="endAmpm">
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="venue">Venue</label>
+          <input type="text" id="venue" name="venue" placeholder="Event location" required />
+        </div>
+
+        <div>
+          <label for="category">Category</label>
+          <select id="category" name="category" required>
+            <option value="">Select category</option>
+            <option>Music</option>
+            <option>Tech</option>
+            <option>Sports</option>
+            <option>Workshop</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="status">Status</label>
+          <select id="status" name="status" class="status-select">
+            <option value="ACTIVE">Active</option>
+            <option value="DRAFT">Draft</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+
+        <div class="form-row-full">
+          <div class="description-header">
+            <label for="description">Description</label>
+            <button type="button" class="btn-ai" id="btnAi">
+              Generate with AI
+            </button>
+          </div>
+          <p class="ai-hint">
+            EventMate AI can create a first draft from title, category and venue. You can edit it before saving.
+          </p>
+          <textarea id="description" name="description" placeholder="Short description of the event"></textarea>
+        </div>
+
+        <div class="form-row-full">
+          <label>Event Image</label>
+          <p class="ai-hint">You can paste an image URL or choose a file from your computer.</p>
+          <input type="text" id="imageUrl" name="imageUrl" placeholder="Image URL (optional)"
+            style="margin-bottom:8px;" />
+          <input type="file" id="imageFile" name="imageFile" accept="image/*" />
+        </div>
+
+        <div>
+          <label for="seats">Available Seats</label>
+          <input type="number" id="seats" name="seats" min="0" placeholder="e.g. 100" required />
+        </div>
+
+        <div>
+          <label for="cost">Cost per Ticket</label>
+          <div style="display:flex; gap:8px;">
+            <select id="currency" name="currency">
+              <option value="INR">₹ (INR)</option>
+              <option value="USD">$ (USD)</option>
+              <option value="EUR">€ (EUR)</option>
+              <option value="GBP">£ (GBP)</option>
+            </select>
+            <input type="number" id="cost" name="cost" min="0" step="0.01" placeholder="e.g. 499" required />
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn-outline" id="btnCancel">Cancel</button>
+        <button type="submit" class="dash-btn-primary">Save Event</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Dynamic API URL - uses environment variable or defaults to localhost
+  const API_BASE = window.location.hostname === 'localhost' 
+    ? 'http://localhost:9098' 
+    : (window.__API_BASE__ || `${window.location.protocol}//${window.location.host.split('.')[0]}-backend.vercel.app`);
+
+  function wireCreateEventForm() {
+    const form = document.getElementById('createEventForm');
+    if (!form) return;
+
+    const btnAi = document.getElementById('btnAi');
+    const btnCancel = document.getElementById('btnCancel');
+
+    if (btnAi) {
+      btnAi.addEventListener('click', async () => {
+        const title = document.getElementById('title').value;
+        const category = document.getElementById('category').value;
+        const venue = document.getElementById('venue').value;
+
+        if (!title || !category || !venue) {
+          alert('Please fill in title, category, and venue first.');
+          return;
+        }
+
+        try {
+          const res = await fetch(API_BASE + '/api/events/generate-description', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, category, venue })
+          });
+          if (!res.ok) {
+            alert('Failed to generate description');
+            return;
+          }
+          const data = await res.json();
+          document.getElementById('description').value = data.description;
+        } catch (err) {
+          console.error(err);
+          alert('Error generating description');
+        }
+      });
+    }
+
+    if (btnCancel) {
+      btnCancel.addEventListener('click', () => {
+        // go back to admin home card
+        if (typeof openPage === 'function') {
+          openPage('home');
+        }
+      });
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Start Date Logic
+      const date = document.getElementById('date').value;
+      const time = document.getElementById('time').value;
+      const ampm = document.getElementById('ampm').value;
+
+      let finalTime = time;
+      if (time) {
+        let [hh, mm] = time.split(':').map(Number);
+        if (ampm === 'PM' && hh < 12) hh += 12;
+        if (ampm === 'AM' && hh === 12) hh = 0;
+        finalTime = String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+      }
+      const dateTime = (date && finalTime) ? (date + 'T' + finalTime) : null;
+
+      // End Date Logic
+      const endDateVal = document.getElementById('endDate').value;
+      const endTimeVal = document.getElementById('endTime').value;
+      const endAmpm = document.getElementById('endAmpm').value;
+
+      let finalEndTime = endTimeVal;
+      if (endTimeVal) {
+        let [hh, mm] = endTimeVal.split(':').map(Number);
+        if (endAmpm === 'PM' && hh < 12) hh += 12;
+        if (endAmpm === 'AM' && hh === 12) hh = 0;
+        finalEndTime = String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+      }
+      const endDateTime = (endDateVal && finalEndTime) ? (endDateVal + 'T' + finalEndTime) : null;
+
+
+      const fileInput = document.getElementById('imageFile');
+      const chosenFileName = fileInput && fileInput.files[0] ? fileInput.files[0].name : '';
+
+      const body = {
+        title: document.getElementById('title').value,
+        dateTime: dateTime,
+        endDate: endDateTime,
+        venue: document.getElementById('venue').value,
+        category: document.getElementById('category').value,
+        status: document.getElementById('status').value,
+        description: document.getElementById('description').value,
+        availableSeats: parseInt(document.getElementById('seats').value || '0'),
+        costPerTicket: parseFloat(document.getElementById('cost').value || '0'),
+        currency: document.getElementById('currency').value,
+        imageUrl: document.getElementById('imageUrl').value || chosenFileName
+      };
+
+      try {
+        const res = await fetch(API_BASE + '/api/events/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (!res.ok) {
+          alert('Failed to save event (HTTP ' + res.status + ')');
+          return;
+        }
+        const saved = await res.json();
+        alert('Event created with ID: ' + saved.id);
+        form.reset();
+      } catch (err) {
+        console.error(err);
+        alert('Error connecting to server.');
+      }
+    });
+  }
+
+  // this runs when file is injected directly (if openPage doesn't re‑wire)
+  wireCreateEventForm();
+</script>

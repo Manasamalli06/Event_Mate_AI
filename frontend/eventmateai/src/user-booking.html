@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Booking Tickets - Event Mate AI</title>
+  <link rel="stylesheet" href="dashboard.css" />
+  <style>
+    .booking-wrapper {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    .booking-title {
+      font-size: 24px;
+      color: #04345c;
+      margin-bottom: 6px;
+    }
+
+    .booking-subtitle {
+      font-size: 14px;
+      color: #5b7285;
+      margin-bottom: 18px;
+    }
+
+    .booking-card {
+      background: #e9f7ff;
+      border-radius: 16px;
+      padding: 16px 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      color: #04345c;
+      margin: 0 0 8px;
+      font-weight: 600;
+    }
+
+    .section-text {
+      font-size: 13px;
+      color: #5b7285;
+      margin: 0 0 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #04345c;
+      margin-bottom: 4px;
+    }
+
+    select,
+    input[type="number"],
+    input[type="text"] {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #c5d8e6;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+
+    .ticket-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ticket-input {
+      max-width: 80px;
+    }
+
+    .ticket-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: #00a8ff;
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .payment-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .payment-pill {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid #00a8ff;
+      font-size: 12px;
+      cursor: pointer;
+      background: #ffffff;
+      color: #04345c;
+    }
+
+    .payment-pill.selected {
+      background: #00a8ff;
+      color: #ffffff;
+    }
+
+    .actions {
+      margin-top: 18px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn-outline,
+    .btn-primary {
+      border-radius: 999px;
+      padding: 8px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-outline {
+      border: 1px solid #00a8ff;
+      background: transparent;
+      color: #00a8ff;
+    }
+
+    .btn-primary {
+      background: #00a8ff;
+      color: #ffffff;
+    }
+
+    .qr-box {
+      margin-top: 8px;
+      padding: 10px;
+      background: #ffffff;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px dashed #c5d8e6;
+    }
+
+    .qr-box img {
+      width: 140px;
+      height: 140px;
+      object-fit: cover;
+      margin-bottom: 6px;
+    }
+
+    .seat-legend {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: #5b7285;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .seat-box {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      margin-right: 4px;
+    }
+
+    .seat-available {
+      background: #04345c;
+    }
+
+    .seat-selected {
+      background: #00a8ff;
+    }
+
+    .seat-occupied {
+      background: #4f8fd1;
+    }
+
+    .seat-container {
+      display: grid;
+      grid-template-columns: repeat(11, 1fr);
+      gap: 6px;
+      justify-items: center;
+      padding: 10px;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px dashed #c5d8e6;
+    }
+
+    .seat {
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      background: #04345c;
+      cursor: pointer;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+    }
+
+    .seat.selected {
+      background: #00a8ff;
+      color: #ffffff;
+    }
+
+    .seat.occupied {
+      background: #4f8fd1;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 640px) {
+      .ticket-row {
+        justify-content: flex-start;
+      }
+
+      .seat-container {
+        grid-template-columns: repeat(9, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- floating emojis layer -->
+  <div class="floating-emoji-layer" id="floatingEmojiLayer"></div>
+
+
+
+  <main class="app-main">
+
+
+    <div class="booking-wrapper">
+      <h1 class="booking-title">Booking Tickets</h1>
+      <p class="booking-subtitle">
+        Select an event, enter ticket count, choose seats, then pick a payment mode to secure your booking.
+      </p>
+
+      <!-- 1. Select Event -->
+      <div class="booking-card">
+        <h2 class="section-title">1. Select Event</h2>
+        <p class="section-text">
+          Choose one of the available events created by admins.
+        </p>
+        <label for="eventSelect">Event</label>
+        <select id="eventSelect">
+          <option value="">Loading events...</option>
+        </select>
+      </div>
+
+      <!-- 2. Number of tickets -->
+      <div class="booking-card">
+        <h2 class="section-title">2. Number of Tickets</h2>
+        <p class="section-text">
+          Set how many tickets you want. You can then select the same number of seats.
+        </p>
+        <div class="ticket-row">
+          <button type="button" id="minusBtn" class="ticket-btn">-</button>
+          <input type="number" id="ticketCount" class="ticket-input" min="1" value="0" />
+          <button type="button" id="plusBtn" class="ticket-btn">+</button>
+        </div>
+      </div>
+
+      <!-- 2.5 Total Price -->
+      <div class="booking-card" id="totalPriceCard" style="display: none;">
+        <h2 class="section-title">2.5 Total Price</h2>
+        <p class="section-text">
+          The total cost for your selected tickets.
+        </p>
+        <div id="totalPrice" style="font-size: 18px; font-weight: bold; color: #04345c;"></div>
+      </div>
+
+      <!-- 3. Seat Selection -->
+      <div class="booking-card">
+        <h2 class="section-title">3. Select Seats</h2>
+        <p class="section-text">
+          You can select any seats, but total selected seats must equal the number of tickets.
+        </p>
+
+        <div class="seat-legend">
+          <span><span class="seat-box seat-available"></span> Available</span>
+          <span><span class="seat-box seat-selected"></span> Selected</span>
+          <span><span class="seat-box seat-occupied"></span> Booked</span>
+        </div>
+
+        <div id="seatContainer" class="seat-container">
+          <!-- seats will be generated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- 4. Payment mode -->
+      <div class="booking-card">
+        <h2 class="section-title">4. Payment Mode</h2>
+        <p class="section-text">
+          Choose how you want to pay for your tickets. This is only a UI simulation, not a real payment.
+        </p>
+
+        <div class="payment-options" id="paymentOptions">
+          <div class="payment-pill" data-method="UPI">UPI</div>
+          <div class="payment-pill" data-method="Paytm">Paytm</div>
+          <div class="payment-pill" data-method="Credit Card">Credit Card</div>
+          <div class="payment-pill" data-method="Debit Card">Debit Card</div>
+          <div class="payment-pill" data-method="Net Banking">Net Banking</div>
+          <div class="payment-pill" data-method="Cash on Venue">Cash on Venue</div>
+        </div>
+
+        <!-- UPI / Paytm extra options -->
+        <div id="upiOptions" style="margin-top:12px; display:none;">
+          <label style="margin-bottom:6px;">UPI Payment Type</label>
+          <div style="font-size:13px; color:#354a5f; margin-bottom:4px;">
+            <label>
+              <input type="radio" name="upiType" value="Scanner" checked />
+              Scanner (QR code)
+            </label>
+            <br />
+            <label>
+              <input type="radio" name="upiType" value="UPI ID" />
+              UPI ID
+            </label>
+          </div>
+
+          <div id="scannerBox" class="qr-box" style="display:block;">
+            <img src="images/image.jpg.png" />
+            <div style="font-size:12px; color:#5b7285;">
+              Scan this demo QR with any UPI app (simulation only).
+            </div>
+          </div>
+
+          <div id="upiIdBox" style="display:none; margin-top:8px;">
+            <label for="upiIdInput">Enter your UPI ID</label>
+            <input type="text" id="upiIdInput" placeholder="example@upi" />
+            <p style="font-size:12px; color:#5b7285; margin-top:4px;">
+              In a real system, a payment gateway would send a collect request to this UPI ID.
+            </p>
+          </div>
+        </div>
+
+        <!-- Credit card details -->
+        <div id="creditCardBox" style="margin-top:12px; display:none;">
+          <label style="margin-bottom:6px;">Credit Card Details</label>
+          <label for="ccNumber">Card Number</label>
+          <input type="text" id="ccNumber" placeholder="XXXX-XXXX-XXXX-XXXX" />
+          <label for="ccName" style="margin-top:6px;">Name on Card</label>
+          <input type="text" id="ccName" placeholder="Full name on card" />
+          <div style="display:flex; gap:10px; margin-top:6px;">
+            <div style="flex:1;">
+              <label for="ccExpiry">Expiry (MM/YY)</label>
+              <input type="text" id="ccExpiry" placeholder="MM/YY" />
+            </div>
+            <div style="flex:1;">
+              <label for="ccCvv">CVV</label>
+              <input type="text" id="ccCvv" placeholder="123" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Debit card details -->
+        <div id="debitCardBox" style="margin-top:12px; display:none;">
+          <label style="margin-bottom:6px;">Debit Card Details</label>
+          <label for="dcNumber">Card Number</label>
+          <input type="text" id="dcNumber" placeholder="XXXX-XXXX-XXXX-XXXX" />
+          <label for="dcName" style="margin-top:6px;">Name on Card</label>
+          <input type="text" id="dcName" placeholder="Full name on card" />
+          <div style="display:flex; gap:10px; margin-top:6px;">
+            <div style="flex:1;">
+              <label for="dcExpiry">Expiry (MM/YY)</label>
+              <input type="text" id="dcExpiry" placeholder="MM/YY" />
+            </div>
+            <div style="flex:1;">
+              <label for="dcCvv">CVV</label>
+              <input type="text" id="dcCvv" placeholder="123" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Net banking details -->
+        <div id="netBankingBox" style="margin-top:12px; display:none;">
+          <label style="margin-bottom:6px;">Net Banking Details</label>
+          <label for="nbBank">Select Bank</label>
+          <select id="nbBank">
+            <option value="">Choose your bank</option>
+            <option value="SBI">State Bank of India</option>
+            <option value="HDFC">HDFC Bank</option>
+            <option value="ICICI">ICICI Bank</option>
+            <option value="AXIS">Axis Bank</option>
+            <option value="KOTAK">Kotak Mahindra Bank</option>
+          </select>
+
+          <label for="nbUserId" style="margin-top:6px;">Net Banking User ID</label>
+          <input type="text" id="nbUserId" placeholder="Enter your net banking ID" />
+
+          <p style="font-size:12px; color:#5b7285; margin-top:4px;">
+            This is a demo screen only. In a real app, you would be redirected to your bank's secure login page.
+          </p>
+        </div>
+
+        <!-- Cash on venue -->
+        <div id="cashTotalBox" style="margin-top:12px; display:none;">
+          <label style="margin-bottom:4px;">Cash on Venue</label>
+          <p style="font-size:13px; color:#5b7285;">
+            You have chosen to pay directly at the event venue. Please carry sufficient cash.
+          </p>
+        </div>
+      </div>
+
+      <!-- 5. Order Summary -->
+      <div class="booking-card" id="orderSummaryCard" style="display:none;">
+        <h2 class="section-title">5. Order Summary</h2>
+        <p class="section-text">
+          Review the pricing details before confirming your booking.
+        </p>
+        <div id="orderSummaryContent" style="font-size:13px; color:#04345c;">
+          <!-- Filled by JavaScript -->
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn-outline" onclick="handleBackUserBooking()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="simulateBooking()">
+          Confirm Booking
+        </button>
+      </div>
+    </div>
+  </main>
+  </div>
+
+  <!-- floating emojis script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const emojiLayer = document.getElementById('floatingEmojiLayer');
+      if (!emojiLayer) return;
+
+      const EMOJIS = ['🎉', '🎊', '🎈', '🥳', '🎂', '🎟️', '🎫', '✨', '🍾', '🎵', '🎤', '🎧', '📅'];
+
+      function createEmojiBubble() {
+        const span = document.createElement('span');
+        span.className = 'emoji-bubble';
+        span.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+
+        const startLeft = Math.random() * 100;
+        const startTop = Math.random() * 100;
+        const dx = (Math.random() * 40 - 20);
+        const dy = (Math.random() * 40 - 20);
+        const duration = 6 + Math.random() * 6;
+
+        span.style.left = startLeft + 'vw';
+        span.style.top = startTop + 'vh';
+        span.style.setProperty('--dx', dx + 'vw');
+        span.style.setProperty('--dy', dy + 'vh');
+        span.style.animationDuration = duration + 's';
+
+        emojiLayer.appendChild(span);
+        setTimeout(() => span.remove(), duration * 1000);
+      }
+
+      setInterval(createEmojiBubble, 800);
+    });
+  </script>
+
+  <script>
+    function handleLogout() {
+      window.location.href = 'login.html';
+    }
+
+    function handleBackUserBooking() {
+      if (document.referrer) {
+        window.history.back();
+      } else {
+        window.location.href = 'user-home.html';
+      }
+    }
+
+    let loadedEvents = [];
+
+    async function loadEventOptions() {
+      const select = document.getElementById('eventSelect');
+      const url = 'http://localhost:9098/api/events';
+      console.log('Calling events API:', url);
+
+      try {
+        const res = await fetch(url);
+        console.log('Status from events API:', res.status);
+
+        if (!res.ok) {
+          select.innerHTML = '<option value="">Failed to load events</option>';
+          return;
+        }
+        const events = await res.json();
+        console.log('Events from backend:', events);
+
+        if (!Array.isArray(events)) {
+          select.innerHTML = '<option value="">No events available</option>';
+          return;
+        }
+
+        loadedEvents = events;
+
+        if (events.length === 0) {
+          select.innerHTML = '<option value="">No events available</option>';
+          return;
+        }
+        select.innerHTML = '<option value="">Select an event</option>';
+        const now = new Date();
+
+        events.forEach(e => {
+          const opt = document.createElement('option');
+          opt.value = e.id;
+
+          let eventDate = null;
+          let isCompleted = false;
+
+          let compareDate = null;
+          if (e.endDate) {
+            // If end date exists, use it for completion check
+            compareDate = new Date(e.endDate);
+            // Set to end of day just in case
+            compareDate.setHours(23, 59, 59, 999);
+          } else if (e.dateTime) {
+            // Fallback to start date
+            compareDate = new Date(e.dateTime);
+          }
+
+          if (compareDate && compareDate < now) {
+            isCompleted = true;
+          }
+
+          if (isCompleted) {
+            opt.textContent = e.title + ' (Completed)';
+            opt.disabled = true;
+          } else {
+            opt.textContent = e.title;
+          }
+
+          select.appendChild(opt);
+        });
+
+        // Pre-select if URL has id
+        const params = new URLSearchParams(window.location.search);
+        const preId = params.get('id');
+        if (preId) {
+          // check if exists in options
+          const exists = Array.from(select.options).some(o => o.value === preId);
+          if (exists) {
+            select.value = preId;
+            // trigger change to load seats/price
+            select.dispatchEvent(new Event('change'));
+          }
+        }
+      } catch (err) {
+        console.error('Error loading events:', err);
+        select.innerHTML = '<option value="">Error loading events</option>';
+      }
+    }
+
+    const ticketInput = document.getElementById('ticketCount');
+    const minusBtn = document.getElementById('minusBtn');
+    const plusBtn = document.getElementById('plusBtn');
+
+    function updateTotalPrice() {
+      const eventId = document.getElementById('eventSelect').value;
+      const tickets = parseInt(ticketInput.value || '0', 10);
+      const totalPriceDiv = document.getElementById('totalPrice');
+      const totalPriceCard = document.getElementById('totalPriceCard');
+
+      if (!eventId || tickets <= 0) {
+        totalPriceCard.style.display = 'none';
+        updateOrderSummary();
+        return;
+      }
+
+      const selectedEvent = loadedEvents.find(e => e.id == eventId);
+      if (!selectedEvent) {
+        totalPriceCard.style.display = 'none';
+        updateOrderSummary();
+        return;
+      }
+
+      const costPerTicket = selectedEvent.costPerTicket;
+      const currency = selectedEvent.currency || '';
+
+      if (costPerTicket == null) {
+        totalPriceDiv.textContent = 'Free';
+      } else {
+        const total = (costPerTicket * tickets).toFixed(2);
+        totalPriceDiv.textContent = total + ' ' + currency;
+      }
+
+      totalPriceCard.style.display = 'block';
+      updateOrderSummary();
+    }
+
+    function updateOrderSummary() {
+      const card = document.getElementById('orderSummaryCard');
+      const content = document.getElementById('orderSummaryContent');
+
+      const eventId = document.getElementById('eventSelect').value;
+      const tickets = parseInt(ticketInput.value || '0', 10);
+      const selectedEvent = loadedEvents.find(e => e.id == eventId);
+
+      if (!eventId || !selectedEvent || tickets <= 0) {
+        card.style.display = 'none';
+        content.innerHTML = '';
+        return;
+      }
+
+      const costPerTicket = selectedEvent.costPerTicket ?? 0;
+      const currency = selectedEvent.currency || '';
+      const ticketPrice = costPerTicket.toFixed(2);
+      const totalTicketsPrice = (costPerTicket * tickets).toFixed(2);
+
+      const seatsCount = selectedSeats.size;
+      const seatPriceEach = costPerTicket;
+      const seatPriceEachStr = seatPriceEach.toFixed(2);
+      const totalSeatsPrice = (seatPriceEach * seatsCount).toFixed(2);
+
+      const grandTotal = (parseFloat(totalTicketsPrice) + parseFloat(totalSeatsPrice)).toFixed(2);
+
+      const seatsList = seatsCount > 0 ? Array.from(selectedSeats).join(', ') : 'No seats selected';
+
+      content.innerHTML = `
+        <div>Event: <strong>${selectedEvent.title}</strong></div>
+        <div>Tickets: ${tickets} × ${ticketPrice} ${currency} = <strong>${totalTicketsPrice} ${currency}</strong></div>
+        <div>Seats (${seatsCount}): ${seatsList}</div>
+        <div>Seat price: ${seatsCount} × ${seatPriceEachStr} ${currency} = <strong>${totalSeatsPrice} ${currency}</strong></div>
+        <hr style="border:none;border-top:1px solid #c5d8e6;margin:8px 0;" />
+        <div style="font-size:15px;">
+          Total Amount: <strong>${grandTotal} ${currency}</strong>
+        </div>
+      `;
+
+      card.style.display = 'block';
+    }
+
+    ticketInput.addEventListener('input', () => {
+      updateTotalPrice();
+      updateOrderSummary();
+    });
+
+    minusBtn.onclick = () => {
+      let val = parseInt(ticketInput.value || '0', 10);
+      if (val > 1) ticketInput.value = val - 1;
+      updateTotalPrice();
+      updateOrderSummary();
+    };
+
+    plusBtn.onclick = () => {
+      let val = parseInt(ticketInput.value || '0', 10);
+      ticketInput.value = val + 1;
+      updateTotalPrice();
+      updateOrderSummary();
+    };
+
+    // Seat selection
+    const seatContainer = document.getElementById('seatContainer');
+    let selectedSeats = new Set();
+
+    const ROWS = ['A', 'B', 'C', 'D', 'E'];
+    const SEATS_PER_ROW = 10;
+    const occupiedSeats = new Set();
+
+    function renderSeats() {
+      seatContainer.innerHTML = '';
+
+      ROWS.forEach(row => {
+        const rowLabel = document.createElement('div');
+        rowLabel.textContent = row;
+        rowLabel.style.display = 'flex';
+        rowLabel.style.alignItems = 'center';
+        rowLabel.style.justifyContent = 'center';
+        rowLabel.style.fontSize = '12px';
+        rowLabel.style.color = '#04345c';
+        seatContainer.appendChild(rowLabel);
+
+        for (let i = 1; i <= SEATS_PER_ROW; i++) {
+          const id = row + i;
+          const div = document.createElement('div');
+          div.classList.add('seat');
+
+          if (occupiedSeats.has(id)) {
+            div.classList.add('occupied');
+          } else if (selectedSeats.has(id)) {
+            div.classList.add('selected');
+          }
+
+          div.dataset.id = id;
+          div.title = id;
+          div.textContent = i;
+          seatContainer.appendChild(div);
+        }
+      });
+    }
+
+    seatContainer.addEventListener('click', (e) => {
+      const seat = e.target.closest('.seat');
+      if (!seat || seat.classList.contains('occupied')) return;
+
+      const id = seat.dataset.id;
+      const currentTickets = parseInt(ticketInput.value || '0', 10);
+
+      if (currentTickets <= 0) {
+        alert('Please enter how many tickets you want before selecting seats.');
+        return;
+      }
+
+      if (!selectedSeats.has(id)) {
+        if (selectedSeats.size >= currentTickets) {
+          alert('You cannot select more seats than the number of tickets.');
+          return;
+        }
+        selectedSeats.add(id);
+      } else {
+        selectedSeats.delete(id);
+      }
+
+      renderSeats();
+      updateOrderSummary();
+    });
+
+    async function loadSeatAvailability(eventId) {
+      occupiedSeats.clear();
+      selectedSeats.clear();
+      renderSeats();
+
+      if (!eventId) return;
+
+      try {
+        const res = await fetch(`http://localhost:9098/api/events/${eventId}/seats`);
+        if (!res.ok) {
+          console.warn('Seat availability not available for this event');
+          return;
+        }
+        const data = await res.json();
+        (data.bookedSeats || []).forEach(s => occupiedSeats.add(s));
+      } catch (e) {
+        console.error('Error loading seat availability', e);
+      }
+      renderSeats();
+      updateOrderSummary();
+    }
+
+    document.getElementById('eventSelect').addEventListener('change', (e) => {
+      const eventId = e.target.value;
+      loadSeatAvailability(eventId);
+      updateTotalPrice();
+      updateOrderSummary();
+    });
+
+    renderSeats();
+
+    // Payment handling
+    let selectedPayment = null;
+    const paymentContainer = document.getElementById('paymentOptions');
+    const upiOptions = document.getElementById('upiOptions');
+    const scannerBox = document.getElementById('scannerBox');
+    const upiIdBox = document.getElementById('upiIdBox');
+    const creditCardBox = document.getElementById('creditCardBox');
+    const debitCardBox = document.getElementById('debitCardBox');
+    const netBankingBox = document.getElementById('netBankingBox');
+    const cashTotalBox = document.getElementById('cashTotalBox');
+
+    paymentContainer.addEventListener('click', (e) => {
+      const pill = e.target.closest('.payment-pill');
+      if (!pill) return;
+
+      document
+        .querySelectorAll('.payment-pill')
+        .forEach(p => p.classList.remove('selected'));
+
+      pill.classList.add('selected');
+      selectedPayment = pill.getAttribute('data-method');
+
+      if (selectedPayment === 'UPI' || selectedPayment === 'Paytm') {
+        upiOptions.style.display = 'block';
+      } else {
+        upiOptions.style.display = 'none';
+      }
+
+      creditCardBox.style.display = (selectedPayment === 'Credit Card') ? 'block' : 'none';
+      debitCardBox.style.display = (selectedPayment === 'Debit Card') ? 'block' : 'none';
+      netBankingBox.style.display = (selectedPayment === 'Net Banking') ? 'block' : 'none';
+      cashTotalBox.style.display = (selectedPayment === 'Cash on Venue') ? 'block' : 'none';
+
+      updateOrderSummary();
+    });
+
+    document.addEventListener('change', (e) => {
+      if (e.target.name === 'upiType') {
+        if (e.target.value === 'Scanner') {
+          scannerBox.style.display = 'block';
+          upiIdBox.style.display = 'none';
+        } else {
+          scannerBox.style.display = 'none';
+          upiIdBox.style.display = 'block';
+        }
+      }
+    });
+
+    function getSelectedUpiType() {
+      const radios = document.querySelectorAll('input[name="upiType"]');
+      for (const r of radios) if (r.checked) return r.value;
+      return null;
+    }
+
+    async function simulateBooking() {
+      const eventId = document.getElementById('eventSelect').value;
+      const tickets = parseInt(ticketInput.value || '0', 10);
+
+      if (!eventId) {
+        alert('Please select an event.');
+        return;
+      }
+      if (!selectedPayment) {
+        alert('Please select a payment mode.');
+        return;
+      }
+      if (tickets < 1) {
+        alert('Please select at least 1 ticket.');
+        return;
+      }
+      if (selectedSeats.size === 0) {
+        alert('Please select your seats.');
+        return;
+      }
+      if (selectedSeats.size !== tickets) {
+        alert('Number of selected seats must be equal to the number of tickets.');
+        return;
+      }
+
+      const userIdFromFrontend = localStorage.getItem('eventmate_userId') || 1;
+      let paymentMode = selectedPayment;
+
+      if (selectedPayment === 'UPI' || selectedPayment === 'Paytm') {
+        const type = getSelectedUpiType();
+        if (type === 'UPI ID') {
+          const upiId = document.getElementById('upiIdInput').value.trim();
+          if (!upiId) {
+            alert('Please enter your UPI ID.');
+            return;
+          }
+          paymentMode = selectedPayment + ' (' + type + ': ' + upiId + ')';
+        } else {
+          paymentMode = selectedPayment + ' (Scanner QR)';
+        }
+      } else if (selectedPayment === 'Net Banking') {
+        const bank = document.getElementById('nbBank').value;
+        const nbUserId = document.getElementById('nbUserId').value.trim();
+        if (!bank) {
+          alert('Please choose your bank.');
+          return;
+        }
+        if (!nbUserId) {
+          alert('Please enter your Net Banking User ID.');
+          return;
+        }
+        paymentMode = 'Net Banking (' + bank + ', User: ' + nbUserId + ')';
+      }
+
+      let eventDateTime = '';
+      const eid = parseInt(eventId, 10);
+      const selectedEvent = loadedEvents.find(ev => ev.id === eid);
+      if (selectedEvent && selectedEvent.dateTime) {
+        eventDateTime = selectedEvent.dateTime;
+      }
+
+      const body = {
+        userId: userIdFromFrontend,
+        eventId: parseInt(eventId, 10),
+        tickets: tickets,
+        paymentMode: paymentMode,
+        status: 'CONFIRMED',
+        eventDateTime: eventDateTime,
+        seats: Array.from(selectedSeats).join(',')
+      };
+
+      try {
+        const url = 'http://localhost:9098/api/bookings';
+        console.log('Posting booking to:', url, body);
+
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        console.log('Status from bookings API:', res.status);
+
+        if (!res.ok) {
+          alert('Failed to create booking. Status: ' + res.status);
+          return;
+        }
+
+        const saved = await res.json();
+        console.log('Saved booking:', saved);
+
+        const bookingId = saved.id;
+        alert('Booking confirmed. Booking ID: ' + bookingId);
+        window.location.href = 'user-home.html';
+      } catch (err) {
+        console.error('Error creating booking:', err);
+        alert('Error connecting to server for booking.');
+      }
+    }
+
+    loadEventOptions();
+  </script>
+</body>
+
+</html>

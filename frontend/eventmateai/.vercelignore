@@ -1,0 +1,7 @@
+backend
+backend/
+node_modules
+*.md
+.git
+.eslintignore
+TODO.md

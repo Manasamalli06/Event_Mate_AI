@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>User Dashboard - Event Mate AI</title>
+  <link rel="stylesheet" href="dashboard.css" />
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #9be7ff 0%, #00c6ff 35%, #00e1ff 70%, #c3f5ff 100%);
+      background-attachment: fixed;
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .app-header {
+      height: 56px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(90deg, #04345c, #00a8ff);
+      color: #ffffff;
+    }
+
+    .app-main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* LEFT SIDEBAR (same colors) */
+    .sidebar {
+      width: 220px;
+      background: #ffffff;
+      border-right: 1px solid #dde6f2;
+      padding: 16px 10px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #5b7285;
+      margin-bottom: 8px;
+      padding: 0 6px;
+    }
+
+    .nav-btn {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: left;
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      color: #04345c;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-btn span.icon {
+      width: 20px;
+      text-align: center;
+    }
+
+    .nav-btn.active,
+    .nav-btn:hover {
+      background: #e6f6ff;
+      color: #00a8ff;
+    }
+
+    /* MAIN CONTENT AREA */
+    .main-content {
+      flex: 1;
+      padding: 24px 28px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    /* Big white card like screenshot */
+    .content-card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 8px 22px rgba(4, 52, 92, 0.08);
+      padding: 20px 24px;
+    }
+
+    .content-title {
+      font-size: 20px;
+      color: #04345c;
+      margin: 0 0 6px;
+    }
+
+    .content-subtitle {
+      font-size: 14px;
+      color: #5b7285;
+      margin: 0 0 16px;
+    }
+
+    /* Slider inside white card */
+    .hero-slider {
+      position: relative;
+      width: 100%;
+      max-width: 960px;
+      height: 420px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      margin: 10px auto 24px;
+    }
+
+    .hero-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+
+    .hero-slide.active {
+      opacity: 1;
+    }
+
+    .hero-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #e6dbe7;
+
+    }
+
+    .loading-text {
+      font-size: 14px;
+      color: #5b7285;
+      margin-bottom: 8px;
+    }
+
+    .error-text {
+      font-size: 14px;
+      color: #e03a3c;
+      margin-bottom: 8px;
+    }
+
+    /* Reminders specific styles */
+    .reminders-wrapper {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 24px 20px 90px;
+    }
+
+    .reminders-title {
+      font-size: 22px;
+      color: #04345c;
+      margin: 0 0 6px;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .reminders-subtitle {
+      font-size: 13px;
+      color: #5b7285;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .reminder-section {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 16px 18px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+      margin-bottom: 16px;
+    }
+
+    .section-heading {
+      font-size: 18px;
+      color: #04345c;
+      margin: 0 0 10px;
+      font-weight: 700;
+    }
+
+    .reminder-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #e9f7ff;
+      margin-bottom: 8px;
+    }
+
+    .reminder-icon-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #04345c;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .reminder-text {
+      flex: 1;
+    }
+
+    .reminder-title {
+      font-size: 15px;
+      color: #04345c;
+      margin: 0 0 2px;
+      font-weight: 600;
+    }
+
+    .reminder-time {
+      font-size: 12px;
+      color: #00a8ff;
+      margin: 0;
+    }
+
+    .pref-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 14px;
+      color: #04345c;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 46px;
+      height: 26px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider-round {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: #d9e7f3;
+      transition: 0.2s;
+      border-radius: 999px;
+    }
+
+    .slider-round:before {
+      content: "";
+      position: absolute;
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      top: 3px;
+      background-color: #ffffff;
+      transition: 0.2s;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    }
+
+    .toggle-switch input:checked+.slider-round {
+      background-color: #00a8ff;
+    }
+
+    .toggle-switch input:checked+.slider-round:before {
+      transform: translateX(20px);
+    }
+
+    .empty-text {
+      font-size: 13px;
+      color: #5b7285;
+      margin-top: 4px;
+    }
+
+    .floating-emoji-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .emoji-bubble {
+      position: absolute;
+      font-size: 24px;
+      opacity: 0;
+      animation: floatUp linear infinite;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(20vh) scale(0.8);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      90% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(-25vh) scale(1.1);
+        opacity: 0;
+      }
+    }
+
+    /* Feedback Page Styles */
+    .feedback-wrapper {
+      max-width: 600px;
+      margin: 0 auto;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      background: #fff;
+    }
+
+    .feedback-header {
+      background: linear-gradient(135deg, #04345c, #00a8ff);
+      padding: 40px 20px;
+      text-align: center;
+      color: white;
+    }
+
+    .feedback-icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+      opacity: 0.9;
+    }
+
+    .feedback-title {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .feedback-subtitle {
+      margin: 10px 0 0;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .feedback-body {
+      padding: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #04345c;
+    }
+
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #c5d8e6;
+      font-size: 14px;
+      box-sizing: border-box;
+      outline: none;
+      font-family: inherit;
+      color: #04345c;
+    }
+
+    .form-select:focus,
+    .form-textarea:focus {
+      border-color: #00a8ff;
+    }
+
+    .star-rating {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 28px;
+      cursor: pointer;
+    }
+
+    .star-rating span {
+      transition: transform 0.2s, color 0.2s;
+    }
+
+    .star-rating span:hover {
+      transform: scale(1.1);
+    }
+
+    .star-rating .star-empty {
+      color: #d0e4f2;
+    }
+
+    .star-rating .star-filled {
+      color: #ffd700;
+    }
+
+    .rating-text {
+      margin-left: 10px;
+      font-size: 14px;
+      color: #5b7285;
+      font-weight: 600;
+    }
+
+    .btn-submit-feedback {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #04345c, #00a8ff);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-submit-feedback:hover {
+      opacity: 0.9;
+    }
+
+    /* New Reminders Styles */
+    .reminder-item-new {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: #f8fbff;
+      border: 1px solid #eef6fc;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      transition: box-shadow 0.2s;
+    }
+
+    .reminder-item-new:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .reminder-icon-circle {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #e9eaec;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #555;
+    }
+
+    .reminder-info {
+      flex: 1;
+    }
+
+    .reminder-event-title {
+      color: #1a1a1a;
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 2px;
+    }
+
+    .reminder-meta {
+      color: #777;
+      font-size: 12px;
+    }
+
+    /* Toast Notification */
+    .toast-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #e6ffed;
+      border: 1px solid #b7ebc7;
+      border-right: 4px solid #28a745;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transform: translateX(120%);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 9999;
+    }
+
+    .toast-notification.show {
+      transform: translateX(0);
+    }
+
+    .toast-notification .icon {
+      color: #28a745;
+      font-size: 18px;
+    }
+
+    .toast-notification button {
+      background: transparent;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      font-size: 16px;
+      margin-left: 10px;
+    }
+
+    .toast-notification button:hover {
+      color: #333;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-logo-circle">E</span>
+        <span class="brand-text">EVENTMATE <span class="brand-ai">AI</span></span>
+      </div>
+      <div class="profile-dropdown">
+        <button class="logout-btn" title="Profile" onclick="window.location.href='user-profile.html'">
+          <div class="logout-icon-circle">👤</div>
+          <span>Profile</span>
+        </button>
+        <div class="dropdown-content">
+          <a href="user-dashboard.html">Dashboard</a>
+          <a href="user-profile.html">Edit Profile</a>
+          <a href="javascript:void(0)" onclick="handleLogout()" class="logout-link">Logout</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <!-- LEFT PANEL -->
+      <aside class="sidebar">
+        <div class="sidebar-title">Menu</div>
+
+        <button class="nav-btn active" id="nav-home" onclick="openPage('home')">
+          <span class="icon">🏠</span>
+          <span>Home (slides)</span>
+        </button>
+
+        <button class="nav-btn" id="nav-events" onclick="openPage('events')">
+          <span class="icon">🎫</span>
+          <span>Events</span>
+        </button>
+
+        <button class="nav-btn" id="nav-mybookings" onclick="openPage('my-bookings')">
+          <span class="icon">📂</span>
+          <span>My Bookings</span>
+        </button>
+
+        <!-- Event Reminders nav item (from Remote) -->
+        <button class="nav-btn" id="nav-reminders" onclick="openPage('reminders')">
+          <span class="icon">⏰</span>
+          <span>Event Reminders</span>
+        </button>
+        <button class="nav-btn" id="nav-feedback" onclick="openPage('feedback')">
+          <span class="icon">💬</span>
+          <span>Submit Feedback</span>
+        </button>
+      </aside>
+
+      <!-- CENTER CONTENT -->
+      <section class="main-content" id="mainContent">
+        <!-- Default: slider in a big white card -->
+        <div class="content-card">
+          <h2 class="content-title">Welcome to EventMate AI</h2>
+          <p class="content-subtitle">
+            Your moving slides / hero carousel is shown below.
+          </p>
+
+          <div class="hero-slider" id="heroSlider">
+            <div class="hero-slide active">
+              <img src="images/slide1.png" alt="Event crowd" />
+            </div>
+            <div class="hero-slide">
+              <img src="images/slide2.png" alt="Sports event" />
+            </div>
+            <div class="hero-slide">
+              <img src="images/slide3.png" alt="Winter music" />
+            </div>
+            <div class="hero-slide">
+              <img src="images/slide4.png" alt="Event crowd" />
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:9098';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchUserName();
+      initHeroSlider(); // Ensure slider starts
+    });
+
+    async function fetchUserName() {
+      const userId = localStorage.getItem('eventmate_userId');
+      if (!userId) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/users/${userId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const user = data.user || data;
+          const btnSpan = document.querySelector('.logout-btn span');
+          if (btnSpan && user.fullName) {
+            btnSpan.textContent = user.fullName.split(' ')[0];
+          }
+        }
+      } catch (e) { console.warn('Failed to load user name', e); }
+    }
+
+    function handleLogout() {
+      window.location.href = 'login.html';
+    }
+
+    function setActiveButton(page) {
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      if (page === 'home') document.getElementById('nav-home').classList.add('active');
+      if (page === 'events') document.getElementById('nav-events').classList.add('active');
+
+      if (page === 'my-bookings') document.getElementById('nav-mybookings').classList.add('active');
+      if (page === 'reminders') document.getElementById('nav-reminders').classList.add('active');
+      if (page === 'feedback') document.getElementById('nav-feedback').classList.add('active');
+    }
+
+    async function loadHtmlIntoMain(url, titleText) {
+      const main = document.getElementById('mainContent');
+      main.innerHTML = `
+        <div class="content-card">
+          <h2 class="content-title">${titleText}</h2>
+          <p class="content-subtitle loading-text">Loading...</p>
+        </div>
+      `;
+      try {
+        const res = await fetch(url);
+        if (!res.ok) {
+          main.innerHTML = `
+            <div class="content-card">
+              <h2 class="content-title">${titleText}</h2>
+              <p class="content-subtitle error-text">Failed to load content.</p>
+            </div>`;
+          return;
+        }
+        const html = await res.text();
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        const body = temp.querySelector('body');
+        const inner = body ? body.innerHTML : html;
+
+        main.innerHTML = `
+          <div class="content-card">
+            ${inner}
+          </div>`;
+      } catch (err) {
+        console.error('Error loading page:', err);
+        main.innerHTML = `
+          <div class="content-card">
+            <h2 class="content-title">${titleText}</h2>
+            <p class="content-subtitle error-text">Error connecting to server.</p>
+          </div>`;
+      }
+    }
+
+    async function openPage(page) {
+      setActiveButton(page);
+
+      if (page === 'home') {
+        const main = document.getElementById('mainContent');
+        main.innerHTML = `
+          <div class="content-card">
+            <h2 class="content-title">Welcome to EventMate AI</h2>
+            <p class="content-subtitle">
+              Your moving slides / hero carousel is shown below.
+            </p>
+            <div class="hero-slider" id="heroSlider">
+              <div class="hero-slide active">
+                <img src="images/slide1.png" alt="Event crowd" />
+              </div>
+              <div class="hero-slide">
+                <img src="images/slide2.png" alt="Sports event" />
+              </div>
+              <div class="hero-slide">
+                <img src="images/slide3.png" alt="Winter music" />
+              </div>
+              <div class="hero-slide">
+                <img src="images/slide4.png" alt="Event crowd" />
+              </div>
+            </div>
+          </div>`;
+        initHeroSlider();
+      } else if (page === 'events') {
+        renderEventsPage();
+      } else if (page === 'booking') {
+        // booking page handling removed from sidebar, but keeping route just in case or redirect
+        loadHtmlIntoMain('booking.html', 'Booking');
+      } else if (page === 'my-bookings') {
+        renderMyBookingsPage();
+      } else if (page === 'reminders') {
+        renderRemindersPage();
+      } else if (page === 'feedback') {
+        renderFeedbackPage();
+      }
+    }
+
+    // --- EVENTS LOGIC ---
+    async function renderEventsPage() {
+      const main = document.getElementById('mainContent');
+      main.innerHTML = `
+        <div class="content-card">
+          <div class="events-container" style="padding:0;">
+            <h1 class="events-title">Event List</h1>
+            <p class="events-subtitle">
+              Browse all public events created by admins in EventMate AI.
+            </p>
+            <div id="eventsList" class="events-list">
+              <p class="loading-text">Loading events...</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/events`);
+        if (!res.ok) throw new Error('Failed to load events');
+        const events = await res.json();
+        renderEventsList(events);
+      } catch (err) {
+        console.error(err);
+        const listEl = document.getElementById('eventsList');
+        if (listEl) listEl.innerHTML = '<p class="error-text">Error loading events.</p>';
+      }
+    }
+
+    function renderEventsList(events) {
+      const listEl = document.getElementById('eventsList');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      if (!events || events.length === 0) {
+        listEl.innerHTML = '<p class="event-details-empty">No events available.</p>';
+        return;
+      }
+
+      const now = new Date();
+      // Normalize today to midnight for comparison
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      events.forEach(ev => {
+        const item = document.createElement('div');
+        item.className = 'event-item';
+
+        let dateStr = 'Date TBD';
+        let status = 'Upcoming'; // Default
+        let eventDate = null;
+
+        if (ev.dateTime) {
+          eventDate = new Date(ev.dateTime);
+          dateStr = eventDate.toLocaleDateString();
+
+          let endDate = null;
+          if (ev.endDate) {
+            endDate = new Date(ev.endDate);
+            dateStr += ' - ' + endDate.toLocaleDateString();
+          }
+
+          // Compare dates (ignoring time for "Today")
+          const sDate = new Date(eventDate);
+          sDate.setHours(0, 0, 0, 0);
+
+          let eDate = null;
+          if (endDate) {
+            eDate = new Date(endDate);
+            eDate.setHours(23, 59, 59, 999);
+          } else {
+            eDate = new Date(sDate);
+            eDate.setHours(23, 59, 59, 999);
+          }
+
+          if (eDate < today) {
+            status = 'Completed';
+          } else if (today >= sDate && today <= eDate) {
+            status = 'Going';
+          } else {
+            // If it's not completed and not going, it must be future or something else
+            // but we need to strictly check if it's future relative to today
+            if (sDate > today) {
+              status = 'Upcoming';
+            } else {
+              // Technically if we are here, it might be that sDate < today but eDate < today was false?
+              // No, if sDate < today and eDate < today, it is completed.
+              // If sDate <= today <= eDate, it is Going.
+              // So sDate > today is upcoming. 
+              status = 'Upcoming';
+            }
+          }
+        }
+
+        // Apply styles based on status
+        let statusColor = '#00a8ff'; // Blue for Upcoming
+        if (status === 'Completed') statusColor = '#999';
+        if (status === 'Going') statusColor = '#28a745'; // Green
+
+        item.innerHTML = `
+          <div class="event-main">
+            <span class="event-name">${ev.title}</span>
+            <span class="event-meta">
+              ${dateStr} • ${ev.venue || 'TBD'}
+            </span>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+             <span class="event-badge">${ev.category || 'Event'}</span>
+             <span style="font-size:11px; font-weight:bold; color:${statusColor}; border:1px solid ${statusColor}; padding:2px 6px; border-radius:4px;">
+               ${status.toUpperCase()}
+             </span>
+          </div>
+        `;
+
+        if (status === 'Going') {
+          // click to open details
+          item.addEventListener('click', () => toggleEventDetails(ev, item));
+          item.style.cursor = 'pointer';
+        } else {
+          // restrict access
+          item.style.cursor = 'not-allowed';
+          item.style.opacity = '0.7';
+          item.addEventListener('click', () => {
+            alert(`This event is ${status} and cannot be booked/opened.`);
+          });
+        }
+
+        listEl.appendChild(item);
+      });
+    }
+
+    function toggleEventDetails(ev, item) {
+      // Check if THIS item is currently open
+      // We look at the immediate next sibling and check if it's a details container
+      const nextEl = item.nextElementSibling;
+      const isAlreadyOpen = nextEl && nextEl.classList.contains('event-details-row-container');
+
+      // Close ALL existing details containers to ensure only one is open at a time (accordion style)
+      const allDetails = document.querySelectorAll('.event-details-row-container');
+      allDetails.forEach(d => d.remove());
+
+      // If it was already open, we essentially toggled it off by removing it above.
+      // So we return early.
+      if (isAlreadyOpen) {
+        return;
+      }
+
+      // Otherwise, create and append the new details container
+      const detailsContainer = document.createElement('div');
+      detailsContainer.className = 'event-details-row-container';
+      detailsContainer.style.padding = '10px 16px';
+      detailsContainer.style.background = '#f0f8ff';
+      detailsContainer.style.marginBottom = '10px';
+      detailsContainer.style.borderRadius = '8px';
+      detailsContainer.style.cursor = 'pointer'; // indicate clickable
+      detailsContainer.title = "Click to close details";
+
+      const date = ev.dateTime ? new Date(ev.dateTime).toLocaleDateString() : 'N/A';
+      const time = ev.dateTime ? new Date(ev.dateTime).toLocaleTimeString() : 'N/A';
+
+      detailsContainer.innerHTML = `
+          <h2 class="event-details-title" style="font-size:16px; margin-top:0;">${ev.title}</h2>
+          <div class="event-details-row"><span class="event-details-label">Date:</span> ${date}</div>
+          <div class="event-details-row"><span class="event-details-label">Time:</span> ${time}</div>
+          <div class="event-details-row"><span class="event-details-label">Venue:</span> ${ev.venue || 'N/A'}</div>
+          <div class="event-details-row"><span class="event-details-label">Category:</span> ${ev.category || 'N/A'}</div>
+          <div class="event-details-row"><span class="event-details-label">Available Seats:</span> ${ev.availableSeats ?? 'N/A'}</div>
+          <div class="event-details-row"><span class="event-details-label">Cost:</span> ${ev.currency || ''} ${ev.costPerTicket ?? 'Free'}</div>
+          <div class="event-details-row"><span class="event-details-label">Status:</span> ${ev.status || 'Active'}</div>
+          <div class="event-details-row" style="margin-top:8px;">
+            <span>${ev.description || 'No description provided.'}</span>
+          </div>
+          
+          <div style="margin-top: 16px; text-align: right;">
+             <a href="user-booking.html?id=${ev.id}" class="btn-primary" style="background:#00a8ff; color:#fff; padding:8px 16px; border-radius:999px; text-decoration:none; display:inline-block; font-weight:600;">
+               Book Now
+             </a>
+          </div>
+       `;
+
+      // Add listener to close when clicking on the details container itself
+      detailsContainer.addEventListener('click', () => {
+        detailsContainer.remove();
+      });
+
+      item.parentNode.insertBefore(detailsContainer, item.nextSibling);
+    }
+
+
+    // --- MY BOOKINGS LOGIC ---
+    let eventsCache = [];
+
+    async function loadEventsCache() {
+      if (eventsCache.length > 0) return;
+      try {
+        const res = await fetch(API_BASE + '/api/events');
+        if (res.ok) eventsCache = await res.json();
+      } catch (e) { console.error(e); }
+    }
+
+    async function renderMyBookingsPage() {
+      const main = document.getElementById('mainContent');
+      main.innerHTML = `
+        <div class="content-card">
+          <h1 class="content-title">My Bookings</h1>
+          <p class="content-subtitle">
+            View all events you have booked tickets for in EventMate AI.
+          </p>
+          
+          <!-- List Container -->
+          <div id="bookingsContainer">
+            <p class="loading-text">Loading bookings...</p>
+          </div>
+
+          <!-- Details / QR Code Container (Hidden by default) -->
+          <div id="bookingDetailsPanel" style="display:none; margin-top:20px; border-top:1px solid #e0e0e0; padding-top:20px;">
+             <button onclick="closeBookingDetails()" style="margin-bottom:10px; background:transparent; border:1px solid #ccc; padding:4px 10px; border-radius:4px; cursor:pointer;">&larr; Back to list</button>
+             <div style="background:#f9fdff; border:1px solid #cceeff; border-radius:12px; padding:20px; display:flex; gap:20px; flex-wrap:wrap;">
+                
+                <!-- QR Code Side -->
+                <div style="flex-shrink:0; text-align:center;">
+                   <div style="background:#fff; padding:10px; border:1px dashed #ccc; border-radius:8px; display:inline-block;">
+                      <canvas id="qrCanvas"></canvas>
+                   </div>
+                   <div style="font-size:12px; color:#666; margin-top:5px;">Scan to Verify</div>
+                </div>
+
+                <!-- Info Side -->
+                <div style="flex:1; font-size:14px; color:#333;">
+                   <h2 id="bdEventTitle" style="color:#04345c; margin-top:0;">Event Title</h2>
+                   <div id="bdInfo" style="display:grid; gap:8px;"></div>
+                </div>
+             </div>
+          </div>
+        </div>
+      `;
+
+      await loadEventsCache();
+
+      try {
+        const userId = 1;
+        let url = API_BASE + '/api/bookings/user/' + userId;
+
+        let res = await fetch(url);
+        if (!res.ok) {
+          url = API_BASE + '/api/bookings';
+          res = await fetch(url);
+        }
+
+        if (!res.ok) {
+          document.getElementById('bookingsContainer').innerHTML = '<p class="error-text">Failed to load bookings.</p>';
+          return;
+        }
+
+        let bookings = await res.json();
+
+        if (url.endsWith('/bookings')) {
+          bookings = bookings.filter(b => b.userId == 1);
+        }
+
+        renderBookingsList(bookings);
+
+      } catch (err) {
+        console.error(err);
+        const c = document.getElementById('bookingsContainer');
+        if (c) c.innerHTML = '<p class="error-text">Error connecting to server.</p>';
+      }
+    }
+
+    function renderBookingsList(bookings) {
+      const container = document.getElementById('bookingsContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (!bookings || bookings.length === 0) {
+        container.innerHTML = '<p class="loading-text">You have not booked any events yet.</p>';
+        return;
+      }
+
+      bookings.forEach(b => {
+        const card = document.createElement('div');
+        card.style.background = '#e9f7ff';
+        card.style.borderRadius = '12px';
+        card.style.padding = '16px';
+        card.style.marginBottom = '12px';
+        card.style.border = '1px solid #d0e4f2';
+        card.style.cursor = 'pointer'; // clickable
+        card.title = "Click to view ticket & QR code";
+
+        const event = eventsCache.find(e => e.id == b.eventId);
+        const eventTitle = event ? event.title : ('Event #' + b.eventId);
+        const date = b.eventDateTime ? new Date(b.eventDateTime).toLocaleString() : 'Date not set';
+
+        card.innerHTML = `
+            <h3 style="margin:0 0 8px; color:#04345c; font-size:16px;">${eventTitle}</h3>
+            <div style="font-size:13px; color:#5b7285;">
+               <div><strong>Date:</strong> ${date}</div>
+               <div><strong>Tickets:</strong> ${b.tickets}</div>
+               <div><strong>Status:</strong> ${b.status || 'CONFIRMED'}</div>
+            </div>
+            <div style="margin-top:8px; font-size:12px; color:#00a8ff; font-weight:600;">
+               Click to view details & QR Code
+            </div>
+          `;
+
+        card.onclick = () => showBookingDetails(b);
+        container.appendChild(card);
+      });
+    }
+
+    function showBookingDetails(b) {
+      document.getElementById('bookingsContainer').style.display = 'none';
+      document.getElementById('bookingDetailsPanel').style.display = 'block';
+
+      const event = eventsCache.find(e => e.id == b.eventId);
+      const eventTitle = event ? event.title : ('Event #' + b.eventId);
+
+      document.getElementById('bdEventTitle').textContent = eventTitle;
+
+      const infoDiv = document.getElementById('bdInfo');
+      const date = b.eventDateTime ? new Date(b.eventDateTime).toLocaleString() : 'N/A';
+
+      const seats = b.seats || 'N/A';
+      const payment = b.paymentMode || 'N/A';
+      const status = b.status || 'CONFIRMED';
+      const bookingId = b.id || '-';
+
+      infoDiv.innerHTML = `
+          <div><strong>Booking ID:</strong> ${bookingId}</div>
+          <div><strong>Date & Time:</strong> ${date}</div>
+          <div><strong>Venue:</strong> ${event ? (event.venue || 'N/A') : 'N/A'}</div>
+          <div><strong>Tickets:</strong> ${b.tickets}</div>
+          <div><strong>Seats:</strong> ${seats}</div>
+          <div><strong>Payment Mode:</strong> ${payment}</div>
+          <div><strong>Status:</strong> <span style="color:${status === 'CONFIRMED' ? 'green' : 'red'}">${status}</span></div>
+       `;
+
+      // Draw QR
+      const qrText = `BID:${bookingId}|EV:${eventTitle}|T:${b.tickets}|S:${seats}`;
+      drawSimpleQr('qrCanvas', qrText);
+    }
+
+    function closeBookingDetails() {
+      document.getElementById('bookingDetailsPanel').style.display = 'none';
+      document.getElementById('bookingsContainer').style.display = 'block';
+    }
+
+    // Real QR Generator using qrcode.js
+    function drawSimpleQr(canvasId, text) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+
+      // Use the global QRCode object from CDN
+      QRCode.toCanvas(canvas, text, { width: 150, margin: 1 }, function (error) {
+        if (error) console.error(error);
+        else console.log('QR Code generated!');
+      });
+    }
+
+    // HERO SLIDER
+    let heroInterval = null;
+
+    function initHeroSlider() {
+      const slides = document.querySelectorAll('.hero-slide');
+      if (!slides.length) return;
+      let index = 0;
+
+      function show(idx) {
+        slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+      }
+
+      show(index);
+      if (heroInterval) clearInterval(heroInterval);
+      heroInterval = setInterval(() => {
+        index = (index + 1) % slides.length;
+        show(index);
+      }, 3000);
+    }
+
+    // --- REMINDERS LOGIC ---
+    function renderRemindersPage() {
+      const main = document.getElementById('mainContent');
+      main.innerHTML = `
+        <div style="max-width: 800px; margin: 0 auto;">
+           <div style="display:flex; justify-content:space-between; align-items:center;">
+             <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
+                <button onclick="openPage('home')" style="background:transparent; border:none; font-size:24px; cursor:pointer;">&larr;</button>
+                <h1 style="margin:0; font-size:24px; color:#04345c;">Event Reminders</h1>
+             </div>
+             <!-- Toast placeholder -->
+             <div id="toastNotification" class="toast-notification">
+                <span class="icon">✅</span>
+                <span>Preferences updated</span>
+                <button onclick="this.parentElement.classList.remove('show')">×</button>
+             </div>
+           </div>
+
+           <div class="content-card" style="min-height: 600px;">
+              <h2 class="section-heading" style="margin-bottom:16px;">Upcoming Event Reminders</h2>
+              <div id="upcomingReminders">
+                <!-- Filled by JS -->
+              </div>
+
+              <h2 class="section-heading" style="margin-top:40px; margin-bottom:16px;">Notification Preferences</h2>
+              <div class="pref-row">
+                <span style="font-weight:600;">Email Notifications</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="emailToggle" />
+                  <span class="slider-round"></span>
+                </label>
+              </div>
+              <div class="pref-row">
+                <span style="font-weight:600;">Push Notifications</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="pushToggle" />
+                  <span class="slider-round"></span>
+                </label>
+              </div>
+           </div>
+        </div>
+      `;
+
+      // Load data
+      loadReminders();
+      loadPreferences();
+    }
+
+    async function loadReminders() {
+      const container = document.getElementById('upcomingReminders');
+      container.innerHTML = '<p class="empty-text">Loading reminders...</p>';
+      const USER_ID = localStorage.getItem('eventmate_userId') || 1;
+
+      try {
+        const url = API_BASE + '/api/reminders/upcoming?userId=' + USER_ID;
+        const res = await fetch(url);
+
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error('Frontend Fetch Error:', res.status, res.statusText, errText);
+          container.innerHTML = `<div class="empty-text" style="color:red">
+            Failed to load reminders.<br>
+            Status: ${res.status} ${res.statusText}<br>
+            Details: ${errText || 'None'}
+          </div>`;
+          return;
+        }
+
+        const reminders = await res.json();
+
+        if (reminders.length === 0) {
+          container.innerHTML = '<p class="empty-text">No upcoming events. Book events to see reminders here.</p>';
+          return;
+        }
+
+        container.innerHTML = '';
+        reminders.forEach(r => {
+          const item = document.createElement('div');
+          item.className = 'reminder-item-new';
+
+          item.innerHTML = `
+             <div class="reminder-icon-circle">🔔</div>
+             <div class="reminder-info">
+                 <div class="reminder-event-title">${r.eventTitle}</div>
+                 <div class="reminder-meta">${r.offsetLabel}</div>
+             </div>
+          `;
+          container.appendChild(item);
+        });
+      } catch (err) {
+        console.error('Error loading reminders:', err);
+        container.innerHTML = '<p class="empty-text">Error connecting to server.</p>';
+      }
+    }
+
+    async function loadPreferences() {
+      const emailToggle = document.getElementById('emailToggle');
+      const pushToggle = document.getElementById('pushToggle');
+      if (!emailToggle || !pushToggle) return;
+
+      const USER_ID = 1;
+
+      try {
+        const res = await fetch(API_BASE + '/api/reminders/preferences?userId=' + USER_ID);
+        if (res.ok) {
+          const prefs = await res.json();
+          emailToggle.checked = !!prefs.emailEnabled;
+          pushToggle.checked = !!prefs.pushEnabled;
+        }
+      } catch (err) {
+        console.error('Error loading preferences:', err);
+      }
+
+      emailToggle.addEventListener('change', () => savePreferences());
+      pushToggle.addEventListener('change', () => savePreferences());
+    }
+
+    async function savePreferences() {
+      const emailToggle = document.getElementById('emailToggle');
+      const pushToggle = document.getElementById('pushToggle');
+      const USER_ID = 1;
+
+      const body = {
+        userId: USER_ID,
+        emailEnabled: emailToggle.checked,
+        pushEnabled: pushToggle.checked
+      };
+
+      try {
+        await fetch(API_BASE + '/api/reminders/preferences', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        showToast();
+      } catch (err) {
+        console.error('Error saving preferences:', err);
+      }
+    }
+
+    function showToast() {
+      const toast = document.getElementById('toastNotification');
+      if (toast) {
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 3000);
+      }
+    }
+
+    function startEmojiAnimation() {
+      const emojiLayer = document.getElementById('floatingEmojiLayer');
+      if (!emojiLayer) return;
+      // Clear previous if any, though likely new DOM
+      emojiLayer.innerHTML = '';
+
+      const EMOJIS = ['🎉', '🎊', '🎈', '🥳', '🎂', '🎟️', '🎫', '✨', '🍾', '🎵', '🎤', '🎧', '📅'];
+
+      function createEmojiBubble() {
+        // Check if layer still exists (user might have navigated away)
+        if (!document.getElementById('floatingEmojiLayer')) return;
+
+        const span = document.createElement('span');
+        span.className = 'emoji-bubble';
+        span.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+
+        const startLeft = Math.random() * 100;
+        const startTop = Math.random() * 100;
+        const dx = (Math.random() * 40 - 20);
+        const dy = (Math.random() * 40 - 20);
+        const duration = 6 + Math.random() * 6;
+
+        span.style.left = startLeft + 'vw';
+        span.style.top = startTop + 'vh';
+        span.style.setProperty('--dx', dx + 'vw');
+        span.style.setProperty('--dy', dy + 'vh');
+        span.style.animationDuration = duration + 's';
+
+        emojiLayer.appendChild(span);
+        setTimeout(() => span.remove(), duration * 1000);
+      }
+
+      // We don't want to set multiple intervals if user navigates back and forth
+      // A simple way is to attaching it to window or just relying on navigating away clearing the partial DOM
+      // For SPA, `openPage` overwrites main, so previous elements are gone.
+      // But we shouldn't leak intervals.
+      if (window.emojiInterval) clearInterval(window.emojiInterval);
+      window.emojiInterval = setInterval(createEmojiBubble, 800);
+    }
+
+
+    // --- FEEDBACK LOGIC ---
+    async function renderFeedbackPage() {
+      const main = document.getElementById('mainContent');
+      main.innerHTML = `
+        <div style="display:flex; justify-content:center; padding-top:20px;">
+          <div class="feedback-wrapper">
+              <div class="feedback-header">
+                  <div class="feedback-icon">💬</div>
+                  <h1 class="feedback-title">Event Feedback</h1>
+                  <p class="feedback-subtitle">Rate your experience and help us improve.</p>
+              </div>
+              <div class="feedback-body">
+                  <div class="form-group">
+                      <label class="form-label">Select Event</label>
+                      <select id="feedbackEventSelect" class="form-select">
+                          <option value="">Loading events...</option>
+                      </select>
+                  </div>
+                  
+                  <div class="form-group">
+                      <label class="form-label">Your Rating</label>
+                      <div class="star-rating" id="starRating">
+                          <span data-val="1" class="star-empty">★</span>
+                          <span data-val="2" class="star-empty">★</span>
+                          <span data-val="3" class="star-empty">★</span>
+                          <span data-val="4" class="star-empty">★</span>
+                          <span data-val="5" class="star-empty">★</span>
+                          <span class="rating-text" id="ratingScore">0 / 5</span>
+                      </div>
+                  </div>
+
+                  <div class="form-group">
+                      <label class="form-label">Comments (Optional)</label>
+                      <textarea class="form-textarea" placeholder="What did you like? What can we improve?"></textarea>
+                  </div>
+
+                  <button class="btn-submit-feedback" onclick="submitFeedback()">
+                      Submit Review <span>✓</span>
+                  </button>
+              </div>
+          </div>
+        </div>
+      `;
+
+      // Interaction for stars
+      const stars = document.querySelectorAll('#starRating span[data-val]');
+      const scoreText = document.getElementById('ratingScore');
+      let currentRating = 0;
+
+      stars.forEach(star => {
+        star.addEventListener('click', () => {
+          const val = parseInt(star.getAttribute('data-val'));
+          currentRating = val;
+          updateStars(val);
+        });
+
+        star.addEventListener('mouseenter', () => {
+          updateStars(parseInt(star.getAttribute('data-val')), true);
+        });
+      });
+
+      document.getElementById('starRating').addEventListener('mouseleave', () => {
+        updateStars(currentRating);
+      });
+
+      function updateStars(rating, isHover = false) {
+        stars.forEach(s => {
+          const val = parseInt(s.getAttribute('data-val'));
+          if (val <= rating) {
+            s.classList.remove('star-empty');
+            s.classList.add('star-filled');
+          } else {
+            s.classList.remove('star-filled');
+            s.classList.add('star-empty');
+          }
+        });
+        if (!isHover) {
+          scoreText.textContent = `${rating} / 5`;
+          document.getElementById('starRating').setAttribute('data-rating', rating);
+        }
+      }
+
+      // Load events for dropdown
+      const select = document.getElementById('feedbackEventSelect');
+      await loadEventsCache();
+
+      try {
+        const USER_ID = localStorage.getItem('eventmate_userId') || 1;
+        // Try bookings first
+        let url = `${API_BASE}/api/bookings/user/${USER_ID}`;
+        let res = await fetch(url);
+
+        // Fallback to all bookings if user specific fails or returns empty (for demo)
+        if (!res.ok) {
+          url = `${API_BASE}/api/bookings`;
+          res = await fetch(url);
+        }
+
+        if (res.ok) {
+          const bookings = await res.json();
+          select.innerHTML = '<option value="" disabled selected>Select an event</option>';
+          const processedEvents = new Set();
+
+          let userBookings = bookings;
+          if (url.endsWith('/bookings')) {
+            userBookings = bookings.filter(b => b.userId == USER_ID);
+          }
+
+          userBookings.forEach(b => {
+            const evt = eventsCache.find(e => e.id == b.eventId);
+            if (evt && !processedEvents.has(evt.id)) {
+              processedEvents.add(evt.id);
+              const opt = document.createElement('option');
+              opt.value = evt.id;
+              const date = evt.dateTime ? new Date(evt.dateTime).toLocaleDateString() : 'N/A';
+              opt.textContent = `${evt.title} (${date})`;
+              select.appendChild(opt);
+            }
+          });
+
+          if (processedEvents.size === 0) {
+            select.innerHTML = '<option value="" disabled>No events found</option>';
+            // If no bookings, maybe show all past events? 
+            // For now let's just show a few recent events from cache for demo purposes if list is empty
+            // to match the "Select Event" dropdown in the screenshot which has a "Zoom Meeting" even if user didn't book it maybe?
+            // Actually, let's just stick to bookings.
+          }
+        }
+      } catch (e) {
+        console.error(e);
+        select.innerHTML = '<option>Error loading events</option>';
+      }
+    }
+
+    async function submitFeedback() {
+      const btn = document.querySelector('.btn-submit-feedback');
+      if (!btn) return;
+
+      const eventId = document.getElementById('feedbackEventSelect').value;
+      const rating = document.getElementById('starRating').getAttribute('data-rating');
+      const comments = document.querySelector('.form-textarea').value;
+      const userId = localStorage.getItem('eventmate_userId');
+
+      if (!eventId) {
+        alert('Please select an event.');
+        return;
+      }
+      if (!rating || rating === '0') {
+        alert('Please provide a rating.');
+        return;
+      }
+      if (!userId) {
+        alert('You must be logged in.');
+        return;
+      }
+
+      const originalText = btn.innerHTML;
+      btn.innerHTML = 'Submitting...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(API_BASE + '/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventId: Number(eventId),
+            userId: Number(userId),
+            rating: Number(rating),
+            comments: comments,
+            attendedDate: new Date().toISOString().split('T')[0] // Default to today
+          })
+        });
+
+        if (res.ok) {
+          btn.innerHTML = 'Submitted Successfully! ✓';
+          btn.style.background = '#28a745';
+          setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.background = '';
+            btn.disabled = false;
+            // Clear form
+            document.querySelector('textarea').value = '';
+            // Reset stars (visuals need reset manually or reload, simplistic reset here)
+            document.getElementById('starRating').setAttribute('data-rating', '0');
+            document.getElementById('ratingScore').textContent = '0 / 5';
+            document.querySelectorAll('#starRating span').forEach(s => {
+              s.classList.remove('star-filled');
+              s.classList.add('star-empty');
+            });
+            // Ideally trigger refresh or something
+          }, 3000);
+        } else if (res.status === 409) {
+          alert('You have already submitted feedback for this event.');
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        } else {
+          alert('Failed to submit feedback.');
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
+      } catch (err) {
+        console.error('Error submitting feedback:', err);
+        alert('Error connecting to server.');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initHeroSlider);
+  </script>
+</body>
+
+</html>

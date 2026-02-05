@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Profile - Event Mate AI</title>
+  <link rel="stylesheet" href="dashboard.css" />
+  <style>
+    /* Reusing same modern styles from user-profile.html */
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5fbff;
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .app-header {
+      height: 56px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(90deg, #04345c, #00a8ff);
+      color: #ffffff;
+    }
+
+    .app-main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 20px;
+      box-sizing: border-box;
+    }
+
+    .profile-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+    }
+
+    /* Left Card */
+    .profile-sidebar-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 22px rgba(4, 52, 92, 0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      height: fit-content;
+    }
+
+    .profile-avatar-large {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 16px;
+      border: 4px solid #f0f7ff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-name-large {
+      font-size: 20px;
+      color: #04345c;
+      margin: 0 0 4px;
+      font-weight: 700;
+    }
+
+    .profile-role-badge {
+      background: #e6f6ff;
+      color: #00a8ff;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .profile-stats-row {
+      display: flex;
+      width: 100%;
+      border-top: 1px solid #eef2f6;
+      border-bottom: 1px solid #eef2f6;
+      padding: 16px 0;
+      margin-bottom: 20px;
+    }
+
+    .profile-stat-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      border-right: 1px solid #eef2f6;
+    }
+
+    .profile-stat-item:last-child {
+      border-right: none;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #04345c;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: #5b7285;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Right Card */
+    .profile-content-card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 8px 22px rgba(4, 52, 92, 0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tabs-header {
+      display: flex;
+      border-bottom: 1px solid #eef2f6;
+      background: #fafbfc;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 16px;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      font-weight: 600;
+      color: #5b7285;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      background: #f0f7ff;
+      color: #00a8ff;
+    }
+
+    .tab-btn.active {
+      border-bottom-color: #00a8ff;
+      color: #00a8ff;
+      background: #ffffff;
+    }
+
+    .tab-content {
+      padding: 24px;
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .info-group {
+      margin-bottom: 16px;
+    }
+
+    .info-label {
+      display: block;
+      font-size: 12px;
+      color: #8a9bb0;
+      margin-bottom: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .info-value {
+      font-size: 15px;
+      color: #04345c;
+      font-weight: 500;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #04345c;
+      margin-bottom: 6px;
+    }
+
+    .form-input,
+    .form-textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #dde6f2;
+      font-size: 14px;
+      color: #04345c;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: #00a8ff;
+    }
+
+    .btn-save {
+      background: #00a8ff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .btn-save:hover {
+      background: #008ad1;
+    }
+
+    /* Avatar Selection */
+    .avatar-selection-list {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .avatar-option-label {
+      cursor: pointer;
+      position: relative;
+    }
+
+    .avatar-option-label input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+    }
+
+    .avatar-option-img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      object-fit: cover;
+      transition: transform 0.2s;
+    }
+
+    .avatar-option-label input:checked+.avatar-option-img {
+      border-color: #00a8ff;
+      transform: scale(1.1);
+      box-shadow: 0 4px 10px rgba(0, 168, 255, 0.2);
+    }
+
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.8);
+      z-index: 999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e1e4e8;
+      border-top-color: #00a8ff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p style="margin-top:10px; color:#5b7285; font-size:14px;">Please wait...</p>
+  </div>
+
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-logo-circle">E</span>
+        <span class="brand-text">EVENTMATE <span class="brand-ai">AI</span></span>
+      </div>
+      <div class="profile-dropdown">
+        <button class="logout-btn" onclick="handleLogout()">
+          <span>Logout</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="profile-container">
+        <!-- Sidebar -->
+        <div class="profile-sidebar-card">
+          <img src="images/avatars/avatar1.png" alt="Profile" class="profile-avatar-large" id="displayAvatar">
+          <h1 class="profile-name-large" id="displayName">Loading...</h1>
+          <span class="profile-role-badge" id="displayRole">ADMIN</span>
+
+          <div class="profile-stats-row">
+            <div class="profile-stat-item">
+              <span class="stat-value" id="statsEventsCreated">0</span>
+              <span class="stat-label">Events Created</span>
+            </div>
+            <div class="profile-stat-item">
+              <span class="stat-value" id="statsBookingsReceived">0</span>
+              <span class="stat-label">Total Bookings</span>
+            </div>
+          </div>
+
+          <button class="btn-outline"
+            style="width:100%; border:1px solid #dde6f2; padding:10px; border-radius:8px; background:none; cursor:pointer; color:#5b7285; font-weight:600;"
+            onclick="window.location.href='admin-home.html'">
+            Back to Dashboard
+          </button>
+        </div>
+
+        <!-- Content -->
+        <div class="profile-content-card">
+          <div class="tabs-header">
+            <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+            <button class="tab-btn" onclick="switchTab('edit')">Edit Profile</button>
+          </div>
+
+          <!-- Overview Tab -->
+          <div id="tab-overview" class="tab-content active">
+            <h3 style="margin-top:0; color:#04345c;">About</h3>
+            <p id="displayBio" style="color:#5b7285; font-size:14px; line-height:1.6;">
+              No bio available.
+            </p>
+
+            <h3 style="color:#04345c; margin-top:24px;">Contact Information</h3>
+            <div class="info-grid">
+              <div class="info-group">
+                <span class="info-label">Email Address</span>
+                <span class="info-value" id="displayEmail">-</span>
+              </div>
+              <div class="info-group">
+                <span class="info-label">Phone</span>
+                <span class="info-value" id="displayPhone">-</span>
+              </div>
+              <div class="info-group full-width">
+                <span class="info-label">Location</span>
+                <span class="info-value" id="displayLocation">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit Tab -->
+          <div id="tab-edit" class="tab-content">
+            <form id="profileForm" onsubmit="handleSave(event)">
+              <div class="info-grid">
+                <div class="form-group">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" class="form-input" id="inputName" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input type="email" class="form-input" id="inputEmail" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Phone Number</label>
+                  <input type="tel" class="form-input" id="inputPhone" placeholder="+1 234 567 8900">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Location</label>
+                  <input type="text" class="form-input" id="inputLocation" placeholder="City, Country">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Bio</label>
+                <textarea class="form-textarea" id="inputBio" rows="4"
+                  placeholder="Tell us about yourself..."></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Choose Avatar</label>
+                <div class="avatar-selection-list" id="avatarOptions">
+                  <!-- populated by JS -->
+                </div>
+                <input type="hidden" id="inputAvatarUrl">
+              </div>
+
+              <div style="text-align:right;">
+                <button type="submit" class="btn-save">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Dynamic API URL - uses environment variable or defaults to localhost
+    const API_BASE = window.location.hostname === 'localhost' 
+      ? 'http://localhost:9098' 
+      : (window.__API_BASE__ || `${window.location.protocol}//${window.location.host.split('.')[0]}-backend.vercel.app`);
+
+    // Check auth
+    const userId = localStorage.getItem('eventmate_userId');
+    const role = localStorage.getItem('eventmate_role'); // Should be 'ADMIN'
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!userId) {
+        window.location.href = 'login.html';
+        return;
+      }
+      setupAvatarOptions();
+      loadProfile();
+    });
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+    }
+
+    function showLoading(show) {
+      document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+    }
+
+    async function loadProfile() {
+      console.log('Fetching admin profile from database...');
+      showLoading(true);
+      try {
+        const response = await fetch(`${API_BASE}/api/users/${userId}`, {
+          cache: 'no-cache'
+        });
+        if (!response.ok) throw new Error('Failed to load profile');
+
+        const data = await response.json();
+        const user = data.user || data;
+        const stats = {
+          eventsCreated: data.eventsCreated || 0,
+          bookingsReceived: data.bookingsReceived || 0
+        };
+
+        // Populate View
+        document.getElementById('displayName').textContent = user.fullName || 'Admin';
+        document.getElementById('displayRole').textContent = role || user.role || 'ADMIN';
+        document.getElementById('displayEmail').textContent = user.email || '';
+        document.getElementById('displayPhone').textContent = user.phoneNumber || 'Not set';
+        document.getElementById('displayLocation').textContent = user.location || 'Not set';
+        document.getElementById('displayBio').textContent = user.bio || 'No bio yet.';
+
+        if (user.avatarUrl) {
+          document.getElementById('displayAvatar').src = user.avatarUrl;
+        }
+
+        // Populate Stats
+        document.getElementById('statsEventsCreated').textContent = stats.eventsCreated;
+        document.getElementById('statsBookingsReceived').textContent = stats.bookingsReceived;
+
+        // Populate Form
+        document.getElementById('inputName').value = user.fullName || '';
+        document.getElementById('inputEmail').value = user.email || '';
+        document.getElementById('inputPhone').value = user.phoneNumber || '';
+        document.getElementById('inputLocation').value = user.location || '';
+        document.getElementById('inputBio').value = user.bio || '';
+        document.getElementById('inputAvatarUrl').value = user.avatarUrl || 'images/avatars/avatar1.png';
+
+        highlightSelectedAvatar(user.avatarUrl || 'images/avatars/avatar1.png');
+
+      } catch (e) {
+        console.error(e);
+        alert('Error loading profile');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function handleSave(e) {
+      e.preventDefault();
+      showLoading(true);
+
+      const payload = {
+        fullName: document.getElementById('inputName').value,
+        email: document.getElementById('inputEmail').value,
+        phoneNumber: document.getElementById('inputPhone').value,
+        location: document.getElementById('inputLocation').value,
+        bio: document.getElementById('inputBio').value,
+        avatarUrl: document.getElementById('inputAvatarUrl').value
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/api/users/${userId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          await loadProfile(); // Reload to show updates and fetch fresh stats
+          alert('Profile saved successfully!');
+          switchTab('overview');
+          // update tab button state visually
+          document.querySelectorAll('.tab-btn')[0].click();
+        } else {
+          alert('Failed to save profile');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error connecting to server');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function setupAvatarOptions() {
+      const avatars = [
+        'images/avatars/avatar1.png',
+        'images/avatars/avatar2.png',
+        'images/avatars/avatar3.png',
+        'images/avatars/avatar4.png'
+      ];
+
+      const container = document.getElementById('avatarOptions');
+      container.innerHTML = '';
+
+      avatars.forEach(url => {
+        const label = document.createElement('label');
+        label.className = 'avatar-option-label';
+        label.innerHTML = `
+            <input type="radio" name="avatar" value="${url}" onchange="selectAvatar('${url}')">
+            <img src="${url}" class="avatar-option-img">
+          `;
+        container.appendChild(label);
+      });
+    }
+
+    function selectAvatar(url) {
+      document.getElementById('inputAvatarUrl').value = url;
+    }
+
+    function highlightSelectedAvatar(url) {
+      const radios = document.querySelectorAll('input[name="avatar"]');
+      radios.forEach(r => {
+        if (r.value === url) r.checked = true;
+      });
+      document.getElementById('inputAvatarUrl').value = url;
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('eventmate_token');
+      localStorage.removeItem('eventmate_role');
+      localStorage.removeItem('eventmate_userId');
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+
+</html>

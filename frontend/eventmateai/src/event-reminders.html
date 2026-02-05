@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Event Reminders - Event Mate AI</title>
+  <link rel="stylesheet" href="dashboard.css" />
+  <style>
+    .reminders-wrapper {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 24px 20px 90px;
+    }
+
+    .reminders-title {
+      font-size: 22px;
+      color: #04345c;
+      margin: 0 0 6px;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .reminders-subtitle {
+      font-size: 13px;
+      color: #5b7285;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    /* white section cards */
+    .reminder-section {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 16px 18px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+      margin-bottom: 16px;
+    }
+
+    .section-heading {
+      font-size: 18px;
+      color: #04345c;
+      margin: 0 0 10px;
+      font-weight: 700;
+    }
+
+    /* Upcoming reminder cards */
+    .reminder-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #e9f7ff;
+      margin-bottom: 8px;
+    }
+
+    .reminder-icon-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #04345c;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .reminder-text {
+      flex: 1;
+    }
+
+    .reminder-title {
+      font-size: 15px;
+      color: #04345c;
+      margin: 0 0 2px;
+      font-weight: 600;
+    }
+
+    .reminder-time {
+      font-size: 12px;
+      color: #00a8ff;
+      margin: 0;
+    }
+
+    /* Preferences toggles */
+    .pref-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 14px;
+      color: #04345c;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 46px;
+      height: 26px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider-round {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: #d9e7f3;
+      transition: 0.2s;
+      border-radius: 999px;
+    }
+
+    .slider-round:before {
+      content: "";
+      position: absolute;
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      top: 3px;
+      background-color: #ffffff;
+      transition: 0.2s;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    }
+
+    .toggle-switch input:checked+.slider-round {
+      background-color: #00a8ff;
+    }
+
+    .toggle-switch input:checked+.slider-round:before {
+      transform: translateX(20px);
+    }
+
+    .empty-text {
+      font-size: 13px;
+      color: #5b7285;
+      margin-top: 4px;
+    }
+
+    /* floating emoji background */
+    .floating-emoji-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .app-shell {
+      position: relative;
+      z-index: 1;
+    }
+
+    .emoji-bubble {
+      position: absolute;
+      font-size: 24px;
+      opacity: 0;
+      animation: floatUp linear infinite;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(20vh) scale(0.8);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      90% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(-25vh) scale(1.1);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- floating emojis layer -->
+  <div class="floating-emoji-layer" id="floatingEmojiLayer"></div>
+
+  <main class="app-main">
+    <div style="display:flex; align-items:center; margin-bottom:12px;"></div>
+
+    <div class="reminders-wrapper">
+      <!-- centered heading -->
+      <h1 class="reminders-title">Event Reminders</h1>
+      <p class="reminders-subtitle">
+        Manage upcoming reminders and notification settings for your events.
+      </p>
+
+      <!-- White box 1: Upcoming Reminders -->
+      <section class="reminder-section">
+        <h2 class="section-heading">Upcoming Event Reminders</h2>
+        <div id="upcomingReminders">
+          <!-- Filled by JS -->
+        </div>
+      </section>
+
+      <!-- White box 2: Notification Preferences -->
+      <section class="reminder-section">
+        <h2 class="section-heading">Notification Preferences</h2>
+
+        <div class="pref-row">
+          <span>Email Notifications</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="emailToggle" />
+            <span class="slider-round"></span>
+          </label>
+        </div>
+
+        <div class="pref-row">
+          <span>Push Notifications</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="pushToggle" />
+            <span class="slider-round"></span>
+          </label>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- floating emojis script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const emojiLayer = document.getElementById('floatingEmojiLayer');
+      if (!emojiLayer) return;
+
+      const EMOJIS = ['🎉', '🎊', '🎈', '🥳', '🎂', '🎟️', '🎫', '✨', '🍾', '🎵', '🎤', '🎧', '📅'];
+
+      function createEmojiBubble() {
+        const span = document.createElement('span');
+        span.className = 'emoji-bubble';
+        span.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+
+        const startLeft = Math.random() * 100;
+        const startTop = Math.random() * 100;
+        const dx = (Math.random() * 40 - 20);
+        const dy = (Math.random() * 40 - 20);
+        const duration = 6 + Math.random() * 6;
+
+        span.style.left = startLeft + 'vw';
+        span.style.top = startTop + 'vh';
+        span.style.setProperty('--dx', dx + 'vw');
+        span.style.setProperty('--dy', dy + 'vh');
+        span.style.animationDuration = duration + 's';
+
+        emojiLayer.appendChild(span);
+        setTimeout(() => span.remove(), duration * 1000);
+      }
+
+      setInterval(createEmojiBubble, 800);
+    });
+  </script>
+
+  <!-- Reminders + preferences logic -->
+  <script>
+    // Dynamic API URL - uses environment variable or defaults to localhost
+    const API_BASE = window.location.hostname === 'localhost' 
+      ? 'http://localhost:9098' 
+      : (window.__API_BASE__ || `${window.location.protocol}//${window.location.host.split('.')[0]}-backend.vercel.app`);
+    const USER_ID = 1; // replace with logged‑in user id when you wire auth
+
+    function handleLogout() {
+      window.location.href = 'login.html';
+    }
+
+    function handleBackFromReminders() {
+      if (document.referrer) {
+        window.history.back();
+      } else {
+        window.location.href = 'user-home.html';
+      }
+    }
+
+    // Load upcoming reminders from the database
+    async function loadReminders() {
+      const container = document.getElementById('upcomingReminders');
+      container.innerHTML = '<p class="empty-text">Loading reminders...</p>';
+
+      try {
+        const url = API_BASE + '/api/reminders/upcoming?userId=' + USER_ID;
+        const res = await fetch(url);
+
+        if (!res.ok) {
+          container.innerHTML = '<p class="empty-text">Failed to load reminders.</p>';
+          return;
+        }
+
+        const reminders = await res.json();
+
+        if (reminders.length === 0) {
+          container.innerHTML =
+            '<p class="empty-text">No upcoming reminders. Book events to see reminders here.</p>';
+          return;
+        }
+
+        // Render reminder cards
+        container.innerHTML = '';
+        reminders.forEach(r => {
+          const card = document.createElement('div');
+          card.className = 'reminder-card';
+
+          const iconBox = document.createElement('div');
+          iconBox.className = 'reminder-icon-box';
+          iconBox.textContent = '🔔';
+
+          const textBox = document.createElement('div');
+          textBox.className = 'reminder-text';
+
+          const titleEl = document.createElement('p');
+          titleEl.className = 'reminder-title';
+          titleEl.textContent = r.eventTitle;
+
+          const whenEl = document.createElement('p');
+          whenEl.className = 'reminder-time';
+          whenEl.textContent = r.offsetLabel;
+
+          textBox.appendChild(titleEl);
+          textBox.appendChild(whenEl);
+          card.appendChild(iconBox);
+          card.appendChild(textBox);
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error('Error loading reminders:', err);
+        container.innerHTML =
+          '<p class="empty-text">Error connecting to server.</p>';
+      }
+    }
+
+    async function loadPreferences() {
+      const emailToggle = document.getElementById('emailToggle');
+      const pushToggle = document.getElementById('pushToggle');
+
+      try {
+        const res = await fetch(API_BASE + '/api/reminders/preferences?userId=' + USER_ID);
+        if (res.ok) {
+          const prefs = await res.json();
+          emailToggle.checked = !!prefs.emailEnabled;
+          pushToggle.checked = !!prefs.pushEnabled;
+        }
+      } catch (err) {
+        console.error('Error loading preferences:', err);
+      }
+
+      emailToggle.addEventListener('change', savePreferences);
+      pushToggle.addEventListener('change', savePreferences);
+    }
+
+    async function savePreferences() {
+      const emailToggle = document.getElementById('emailToggle');
+      const pushToggle = document.getElementById('pushToggle');
+
+      const body = {
+        userId: USER_ID,
+        emailEnabled: emailToggle.checked,
+        pushEnabled: pushToggle.checked
+      };
+
+      try {
+        await fetch(API_BASE + '/api/reminders/preferences', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+      } catch (err) {
+        console.error('Error saving preferences:', err);
+      }
+    }
+
+    loadReminders();
+    loadPreferences();
+  </script>
+</body>
+
+</html>

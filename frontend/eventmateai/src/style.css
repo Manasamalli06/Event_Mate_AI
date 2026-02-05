@@ -1,0 +1,105 @@
+/* Overall page */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: #ffffff; /* sky blue */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Outer card */
+.register-container {
+  background-color: #f2fbff; /* lighter sky blue box */
+  border-radius: 10px;
+  padding: 40px 35px 35px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  width: 360px;
+}
+
+/* Title */
+.register-container h1 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 25px;
+  font-size: 26px;
+  font-weight: 700;
+  color: #111111;
+}
+.app-title {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  text-align: center;
+  color: #222222;
+}
+
+/* Form layout */
+.register-form .form-group {
+  margin-bottom: 18px;
+}
+
+/* Labels */
+.register-form label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #133b5c;
+}
+
+/* Red star */
+.required {
+  color: #ff3b3b;
+}
+
+/* Inputs */
+.register-form input[type="text"],
+.register-form input[type="email"],
+.register-form input[type="password"] {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: none;
+  background-color: #e1f4fb; /* light sky blue */
+  box-sizing: border-box;
+  font-size: 14px;
+  color: #315b7b;
+}
+
+/* Placeholder color */
+.register-form input::placeholder {
+  color: #7aa4c3;
+}
+
+/* Submit button */
+.submit-btn {
+  width: 100%;
+  padding: 12px 0;
+  background: linear-gradient(45deg, #9c27b0, #e91e63);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+/* Hover for button */
+.submit-btn:hover {
+  background: linear-gradient(45deg, #7b1fa2, #c2185b);
+}
+
+.bottom-text {
+  margin-top: 15px;
+  font-size: 13px;
+  text-align: center;
+  color: #4a4a4a;
+}
+
+.bottom-link {
+  color: #4a8fcf;
+  text-decoration: underline;
+  font-weight: 500;
+}
